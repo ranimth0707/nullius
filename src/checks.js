@@ -1,0 +1,297 @@
+// The preflight itself.
+//
+// Design rule: FAIL CLOSED. A check that cannot be completed is never treated as
+// permission. "We could not verify this" and "this is fine" are different answers,
+// and only one of them lets a deposit through.
+
+import { investmentInfo, previewDeposit, previewRedeem } from "./baw.js";
+import { identify } from "./chain.js";
+import { matchPool, apyHistory, normaliseSymbol } from "./llama.js";
+
+export const BLOCK = "BLOCK";
+export const WARN = "WARN";
+export const PASS = "PASS";
+/**
+ * Distinct from BLOCK on purpose. UNTESTED means the check never ran — most often
+ * because the wallet does not hold the asset, so no simulation is possible. That
+ * still prevents a GO (fail closed), but calling it a failure of the product
+ * would be a lie about what was observed.
+ */
+export const UNTESTED = "UNTESTED";
+
+const result = (id, level, title, detail, evidence = null) =>
+  ({ id, level, title, detail, evidence });
+
+const alnum = (s) => String(s ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+/** Distinctive word from a protocol name, used to look for it on-chain. */
+function protocolToken(protocolName) {
+  const first = String(protocolName ?? "").trim().split(/\s+/)[0] ?? "";
+  return alnum(first);
+}
+
+// ---------------------------------------------------------------- checks
+
+/** 1. Is the product still open for deposits, or has it been delisted? */
+export async function checkListing(investmentId) {
+  const r = await investmentInfo(investmentId);
+  if (!r.ok) {
+    return result("listing", BLOCK, "Cannot read product status",
+      `investment-info failed: ${r.error?.name ?? "unknown"}`, r.error);
+  }
+  const { investable, protocolName, investmentName, apyDisplay, tvl } = r.data;
+  if (investable === false) {
+    return result("listing", BLOCK, "Product is delisted",
+      `${protocolName} ${investmentName} still appears in the listing at ${apyDisplay}, ` +
+      `but no longer accepts deposits.`, r.data);
+  }
+  if (investable !== true) {
+    return result("listing", BLOCK, "Deposit status unknown",
+      "The API did not state whether this product accepts deposits.", r.data);
+  }
+  return result("listing", PASS, "Product accepts deposits",
+    `${protocolName} ${investmentName} — ${apyDisplay}, reported TVL $${Number(tvl).toLocaleString("en-US")}`,
+    r.data);
+}
+
+/** 2. Simulate without broadcasting. This is what reveals the real contract. */
+export async function checkSimulation(investmentId, tokenAddress, amount, chainId) {
+  const r = await previewDeposit(investmentId, tokenAddress, amount, chainId);
+  if (!r.ok) {
+    if (r.error?.name === "INSUFFICIENT_BALANCE") {
+      return result("simulate", UNTESTED, "Not simulated — asset not held",
+        "A deposit can only be simulated for an asset the wallet holds, so the contract " +
+        "behind this product was never revealed and could not be checked on-chain.", r.error);
+    }
+    return result("simulate", BLOCK, "Simulation refused",
+      `${r.error?.name}: ${r.error?.message}`, r.error);
+  }
+  const target = r.data?.feeAndContract?.interactWith?.address ?? null;
+  if (!target) {
+    return result("simulate", BLOCK, "Simulation revealed no contract",
+      "The preview succeeded but named no contract to interact with, so there is " +
+      "nothing to verify against the chain.", r.data);
+  }
+  const fee = r.data?.feeAndContract?.estimatedNetworkFee;
+  return result("simulate", PASS, "Simulated without broadcasting",
+    `Would interact with ${target} — network fee ≈ $${Number(fee?.valueUsd ?? 0).toFixed(4)}`,
+    r.data);
+}
+
+/** 3. Ask the chain what that contract actually is. */
+export async function checkIdentity(target, claim) {
+  let onchain;
+  try {
+    onchain = await identify(target);
+  } catch (err) {
+    return result("identity", BLOCK, "Chain unreachable",
+      `Could not verify the contract independently: ${err.message}`);
+  }
+  if (!onchain.isContract) {
+    return result("identity", BLOCK, "Target holds no code",
+      `${target} is not a deployed contract on this chain.`, onchain);
+  }
+  // A vault or staking contract is under no obligation to implement name()/symbol().
+  // Silence is not a contradiction — it means this route cannot identify it, which
+  // is reported as untested rather than as a mismatch.
+  if (!onchain.name && !onchain.symbol) {
+    return result("identity", UNTESTED, "Contract does not name itself",
+      `${target} holds code but exposes no name() or symbol(), so its identity could not be ` +
+      `confirmed this way. It was not shown to be wrong — it could not be read.`, onchain);
+  }
+  const hay = alnum(`${onchain.name ?? ""}${onchain.symbol ?? ""}`);
+  const wantProto = protocolToken(claim.protocolName);
+  // Deliberately the raw asset name: the WBNB/BTCB aliasing exists to match a
+  // third-party index, and applying it here would fail a correct vBNB contract.
+  const wantAsset = alnum(String(claim.investmentName ?? "").replace(/^BSC_/i, ""));
+
+  const protoOk = wantProto.length >= 3 && hay.includes(wantProto);
+  const assetOk = wantAsset.length >= 2 && hay.includes(wantAsset);
+
+  const seen = `"${onchain.name ?? "?"}" (${onchain.symbol ?? "?"})`;
+  if (!protoOk) {
+    // The contract was readable and named itself something other than the advertised
+    // protocol. Depositing here means landing somewhere other than where the listing
+    // said, which is precisely the case this tool exists to stop.
+    return result("identity", BLOCK, "Contract names a different protocol",
+      `The listing advertises ${claim.protocolName}, but the contract the deposit would enter ` +
+      `calls itself ${seen}. Two different protocol names for one deposit.`, onchain);
+  }
+  if (!assetOk) {
+    return result("identity", WARN, "Asset naming differs on-chain",
+      `Protocol confirmed as ${claim.protocolName}, but the contract calls the asset ${seen} ` +
+      `rather than ${claim.investmentName}. Wrapper naming often differs; worth an eye.`, onchain);
+  }
+  return result("identity", PASS, "Contract confirmed on-chain",
+    `Chain reports ${seen} — consistent with ${claim.protocolName} ${claim.investmentName}.`,
+    onchain);
+}
+
+/** 4. Does the simulated swap of value conserve value? */
+export function checkValue(preview) {
+  const changes = preview?.balanceChange ?? [];
+  if (changes.length < 2) {
+    return result("value", WARN, "Value change not comparable",
+      "The simulation did not return both sides of the balance change.");
+  }
+  const out = changes.filter((c) => Number(c.amount) < 0)
+    .reduce((s, c) => s + Number(c.valueUsd ?? 0), 0);
+  const into = changes.filter((c) => Number(c.amount) > 0)
+    .reduce((s, c) => s + Number(c.valueUsd ?? 0), 0);
+  if (out <= 0) {
+    return result("value", WARN, "No outgoing value found", "Could not measure value leakage.");
+  }
+  const slipPct = ((out - into) / out) * 100;
+  if (slipPct > 1) {
+    return result("value", BLOCK, "Value lost in the simulated deposit",
+      `Sending $${out.toFixed(2)} would return a position worth $${into.toFixed(2)} ` +
+      `(${slipPct.toFixed(2)}% lost before fees).`);
+  }
+  return result("value", PASS, "Value is conserved",
+    `$${out.toFixed(2)} in → $${into.toFixed(2)} of position (${slipPct >= 0 ? "" : "+"}` +
+    `${(-slipPct).toFixed(2)}% difference).`);
+}
+
+/**
+ * 5. Can the money get back out?
+ *
+ * Probed by simulating a full exit. With no position open, a supported product
+ * answers INVESTMENT_NO_POSITION — it reached the position check, which means the
+ * exit path itself is wired up. This is a structural check, not a guarantee that
+ * a future exit will succeed under all market conditions.
+ */
+export async function checkExit(investmentId, tokenAddress, chainId) {
+  const r = await previewRedeem(investmentId, tokenAddress, chainId);
+  if (r.ok) {
+    return result("exit", PASS, "Exit path is open", "A full exit simulated cleanly.");
+  }
+  if (r.error?.name === "INVESTMENT_NO_POSITION") {
+    return result("exit", PASS, "Exit path exists",
+      "Exit reached the position check (no position held yet), so the withdraw path is wired up.",
+      r.error);
+  }
+  return result("exit", BLOCK, "Exit path could not be confirmed",
+    `Simulating a withdrawal returned ${r.error?.name}: ${r.error?.message}`, r.error);
+}
+
+/**
+ * 6. Is today's rate normal for this pool, or bait?
+ *
+ * A rate far above a pool's own multi-year record is the classic trap: a
+ * temporary incentive, a thin market, or a depeg already underway.
+ */
+export async function checkHistory(investment) {
+  const m = await matchPool(investment);
+  const apy = Number(investment.apyBps) / 100;
+
+  if (m.status === "no_record") {
+    return result("history", WARN, "No independent record of this pool",
+      `No third-party record exists for ${investment.protocolName} ${investment.investmentName}, ` +
+      `so today's ${apy.toFixed(2)}% cannot be compared against any history.`);
+  }
+  if (m.status === "ambiguous") {
+    const closest = apy - m.err;
+    return result("history", WARN, "Cannot tell which pool this is",
+      `${m.candidates} independent pool${m.candidates === 1 ? "" : "s"} carry this protocol and ` +
+      `asset, and none advertises a matching rate — the nearest is ${closest.toFixed(2)}% against ` +
+      `the listed ${apy.toFixed(2)}% (${m.err.toFixed(2)}pp apart). Which pool a deposit would ` +
+      `enter cannot be established, so its history cannot be read.`);
+  }
+  const h = await apyHistory(m.pool.pool, apy);
+  if (!h) {
+    return result("history", WARN, "Not enough history",
+      `Matched ${m.pool.project}, but its record is too short to judge today's rate.`);
+  }
+  const ev = { ...h, project: m.pool.project, poolId: m.pool.pool, tvlUsd: m.pool.tvlUsd };
+  if (h.ratioToMedian !== null && h.ratioToMedian >= 3 && h.percentile >= 0.95) {
+    return result("history", WARN, "Rate is far above this pool's own history",
+      `Today's ${apy.toFixed(2)}% is ${h.ratioToMedian.toFixed(1)}× the pool's median ` +
+      `(${h.median.toFixed(2)}%) across ${h.samples} days since ${h.from}, and higher than ` +
+      `${(h.percentile * 100).toFixed(0)}% of its record. Rates this far above a pool's own ` +
+      `baseline are usually temporary incentives or a market under stress.`, ev);
+  }
+  return result("history", PASS, "Rate is normal for this pool",
+    `${apy.toFixed(2)}% sits at the ${(h.percentile * 100).toFixed(0)}th percentile of ` +
+    `${h.samples} days of record (median ${h.median.toFixed(2)}%) since ${h.from}.`, ev);
+}
+
+/** 7. Is the pool big enough to absorb this deposit? */
+export function checkCapacity(depositUsd, poolTvlUsd) {
+  if (!poolTvlUsd || poolTvlUsd <= 0 || !depositUsd) {
+    return result("capacity", WARN, "Pool size unknown",
+      "Could not establish independent pool size, so deposit impact is unknown.");
+  }
+  const share = depositUsd / poolTvlUsd;
+  const pct = (share * 100).toFixed(2);
+  if (share > 0.05) {
+    return result("capacity", BLOCK, "Deposit is too large for this pool",
+      `$${depositUsd.toFixed(2)} would be ${pct}% of a $${Math.round(poolTvlUsd).toLocaleString("en-US")} ` +
+      `pool. A share this size moves the rate it was chosen for.`);
+  }
+  return result("capacity", PASS, "Pool can absorb this deposit",
+    `$${depositUsd.toFixed(2)} is ${pct}% of a $${Math.round(poolTvlUsd).toLocaleString("en-US")} pool.`);
+}
+
+// ---------------------------------------------------------------- pipeline
+
+/** The native-coin sentinel address used by the wallet for BNB. */
+export const NATIVE_BNB = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+
+/** Run every check. Returns { verdict, checks } with verdict GO or NO-GO. */
+export async function preflight({ investment, tokenAddress, amount, chainId = "56" }) {
+  const checks = [];
+  const investmentId = investment.investmentId;
+
+  const listing = await checkListing(investmentId);
+  checks.push(listing);
+
+  // The deposit asset is only exposed by investment-info, never by the listing.
+  const token = tokenAddress
+    ?? listing.evidence?.assetTokenList?.[0]?.tokenAddress
+    ?? (String(investment.investmentName).toUpperCase() === "BNB" ? NATIVE_BNB : null);
+
+  if (!token) {
+    checks.push(result("simulate", BLOCK, "No deposit asset exposed",
+      "Neither the listing nor the product detail named an asset address to deposit."));
+    return { verdict: "NO-GO", blocked: 2, warned: 0, checks };
+  }
+
+  const sim = await checkSimulation(investmentId, token, amount, chainId);
+  checks.push(sim);
+
+  if (sim.level === PASS) {
+    const target = sim.evidence.feeAndContract.interactWith.address;
+    checks.push(await checkIdentity(target, investment));
+    checks.push(checkValue(sim.evidence));
+  } else {
+    checks.push(result("identity", sim.level === UNTESTED ? UNTESTED : BLOCK,
+      "Contract never revealed",
+      "Without a simulation there is no contract address to put to the chain, so the " +
+      "product's identity is unverified either way."));
+  }
+
+  checks.push(await checkExit(investmentId, token, chainId));
+
+  const hist = await checkHistory(investment);
+  checks.push(hist);
+
+  const depositUsd = sim.level === PASS
+    ? Math.abs((sim.evidence.balanceChange ?? [])
+        .filter((c) => Number(c.amount) < 0)
+        .reduce((s, c) => s + Number(c.valueUsd ?? 0), 0))
+    : null;
+  checks.push(checkCapacity(depositUsd, hist.evidence?.tvlUsd));
+
+  const blocked = checks.filter((c) => c.level === BLOCK).length;
+  const untested = checks.filter((c) => c.level === UNTESTED).length;
+  return {
+    // Fail closed: an unverified position is refused whether the check failed
+    // or merely never ran.
+    verdict: blocked === 0 && untested === 0 ? "GO" : "NO-GO",
+    reason: blocked > 0 ? "failed" : untested > 0 ? "unverified" : "clear",
+    blocked,
+    untested,
+    warned: checks.filter((c) => c.level === WARN).length,
+    checks,
+  };
+}

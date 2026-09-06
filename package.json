@@ -1,0 +1,20 @@
+{
+  "name": "defi-preflight",
+  "version": "0.1.0",
+  "description": "Refuses to deposit into any Binance Agent OS DeFi position it cannot verify on-chain. Fails closed.",
+  "type": "module",
+  "bin": {
+    "defi-preflight": "src/cli.js"
+  },
+  "scripts": {
+    "judge": "node src/cli.js scan --demo",
+    "scan": "node src/cli.js scan",
+    "check": "node src/cli.js check",
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT",
+  "dependencies": {}
+}
