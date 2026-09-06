@@ -10,7 +10,7 @@
       "investType": "Earn",
       "apyType": "APY",
       "apy": null,
-      "tvl": "728436265.95",
+      "tvl": "726514693.99",
       "apyBps": 144,
       "apyDisplay": "1.44%"
     },
@@ -24,7 +24,7 @@
         "id": "listing",
         "level": "PASS",
         "title": "Product accepts deposits",
-        "detail": "Lista BNB — 1.44%, reported TVL $728,436,265.95",
+        "detail": "Lista BNB — 1.44%, reported TVL $724,322,810.95",
         "evidence": {
           "binanceChainId": "56",
           "defiProtocolId": "helio",
@@ -36,7 +36,7 @@
           "investable": true,
           "apy": null,
           "apyType": "APY",
-          "tvl": "728436265.95",
+          "tvl": "724322810.95",
           "poolAddress": null,
           "feeRate": null,
           "assetTokenList": [
@@ -63,27 +63,27 @@
         "id": "simulate",
         "level": "PASS",
         "title": "Simulated without broadcasting",
-        "detail": "Would interact with 0x1adb950d8bb3da4be104211d5ab038628e477fe6 — network fee ≈ $0.0039",
+        "detail": "Would interact with 0x1adb950d8bb3da4be104211d5ab038628e477fe6 — network fee ≈ $0.0038",
         "evidence": {
           "balanceChange": [
             {
               "tokenSymbol": "BNB",
               "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
               "amount": "-0.005",
-              "valueUsd": "3.810431576556760811012163176807235106355"
+              "valueUsd": "3.810395629909759615708539430812866661210"
             },
             {
               "tokenSymbol": "slisBNB",
               "tokenAddress": "0xb0b84d294e0c75a6abe60171b70edeb2efd14a1b",
               "amount": "0.004816747773774545",
-              "valueUsd": "3.806873015376102791756842979756604083922212979099055"
+              "valueUsd": "3.810372961966997615580196183701040580179464110416390"
             }
           ],
           "feeAndContract": {
             "estimatedNetworkFee": {
-              "amount": "0.000005065496981072",
+              "amount": "0.000004971951899056",
               "tokenSymbol": "BNB",
-              "valueUsd": "0.003860"
+              "valueUsd": "0.003789"
             },
             "interactWith": {
               "address": "0x1adb950d8bb3da4be104211d5ab038628e477fe6"
@@ -108,7 +108,7 @@
         "id": "value",
         "level": "PASS",
         "title": "Value is conserved",
-        "detail": "$3.81 in → $3.81 of position (-0.09% difference).",
+        "detail": "$3.81 in → $3.81 of position (-0.00% difference).",
         "evidence": null
       },
       {
@@ -149,7 +149,7 @@
       "investType": "Earn",
       "apyType": "APY",
       "apy": null,
-      "tvl": "120570076.58",
+      "tvl": "120142862.29",
       "apyBps": 144,
       "apyDisplay": "1.44%"
     },
@@ -163,7 +163,7 @@
         "id": "listing",
         "level": "PASS",
         "title": "Product accepts deposits",
-        "detail": "Aster BNB — 1.44%, reported TVL $120,570,076.58",
+        "detail": "Aster BNB — 1.44%, reported TVL $120,142,862.29",
         "evidence": {
           "binanceChainId": "56",
           "defiProtocolId": "astherus",
@@ -175,7 +175,7 @@
           "investable": true,
           "apy": null,
           "apyType": "APY",
-          "tvl": "120570076.58",
+          "tvl": "120142862.29",
           "poolAddress": null,
           "feeRate": null,
           "assetTokenList": [
@@ -202,27 +202,27 @@
         "id": "simulate",
         "level": "PASS",
         "title": "Simulated without broadcasting",
-        "detail": "Would interact with 0x2f31ab8950c50080e77999fa456372f276952fd8 — network fee ≈ $0.0292",
+        "detail": "Would interact with 0x2f31ab8950c50080e77999fa456372f276952fd8 — network fee ≈ $0.0272",
         "evidence": {
           "balanceChange": [
             {
               "tokenSymbol": "BNB",
               "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
               "amount": "-0.005",
-              "valueUsd": "3.8068290278445270484332733314628529825"
+              "valueUsd": "3.811695206924563885928386515300684173245"
             },
             {
               "tokenSymbol": "asBNB",
               "tokenAddress": "0x77734e70b6e88b4d82fe632a168edf6e700912b6",
               "amount": "0.004687776705319128",
-              "valueUsd": "3.827406687591635303414669810715196247818125957625621031087982959928"
+              "valueUsd": "3.812026492459602343490171317299885619419212657476622603411870623632"
             }
           ],
           "feeAndContract": {
             "estimatedNetworkFee": {
-              "amount": "0.000038312608695768",
+              "amount": "0.000035632367573374",
               "tokenSymbol": "BNB",
-              "valueUsd": "0.029170"
+              "valueUsd": "0.027164"
             },
             "interactWith": {
               "address": "0x2f31ab8950c50080e77999fa456372f276952fd8"
@@ -247,7 +247,7 @@
         "id": "value",
         "level": "PASS",
         "title": "Value is conserved",
-        "detail": "$3.81 in → $3.83 of position (+0.54% difference).",
+        "detail": "$3.81 in → $3.81 of position (+0.01% difference).",
         "evidence": null
       },
       {
@@ -288,7 +288,7 @@
       "investType": "Earn",
       "apyType": "APY",
       "apy": null,
-      "tvl": "436835894.63",
+      "tvl": "436630280.43",
       "apyBps": 13,
       "apyDisplay": "0.13%"
     },
@@ -302,7 +302,7 @@
         "id": "listing",
         "level": "PASS",
         "title": "Product accepts deposits",
-        "detail": "Venus BNB — 0.13%, reported TVL $436,835,894.63",
+        "detail": "Venus BNB — 0.13%, reported TVL $436,630,280.43",
         "evidence": {
           "binanceChainId": "56",
           "defiProtocolId": "venus",
@@ -314,7 +314,7 @@
           "investable": true,
           "apy": null,
           "apyType": "APY",
-          "tvl": "436835894.63",
+          "tvl": "436630280.43",
           "poolAddress": null,
           "feeRate": null,
           "assetTokenList": [
@@ -341,27 +341,27 @@
         "id": "simulate",
         "level": "PASS",
         "title": "Simulated without broadcasting",
-        "detail": "Would interact with 0xa07c5b74c9b40447a954e1466938b865b6bbea36 — network fee ≈ $0.0087",
+        "detail": "Would interact with 0xa07c5b74c9b40447a954e1466938b865b6bbea36 — network fee ≈ $0.0069",
         "evidence": {
           "balanceChange": [
             {
               "tokenSymbol": "BNB",
               "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
               "amount": "-0.005",
-              "valueUsd": "3.81035278989239420649108354637080540010"
+              "valueUsd": "3.829696109801382302635040720709494230435"
             },
             {
               "tokenSymbol": "vBNB",
               "tokenAddress": "0xa07c5b74c9b40447a954e1466938b865b6bbea36",
-              "amount": "0.20043643",
-              "valueUsd": "3.82740646507703298338642523524099645235516499781472367905"
+              "amount": "0.20043636",
+              "valueUsd": "3.81263063284356008519805251623474712456111038944970289868"
             }
           ],
           "feeAndContract": {
             "estimatedNetworkFee": {
-              "amount": "0.000011437982181294",
+              "amount": "0.000008972373241026",
               "tokenSymbol": "BNB",
-              "valueUsd": "0.008717"
+              "valueUsd": "0.006872"
             },
             "interactWith": {
               "address": "0xa07c5b74c9b40447a954e1466938b865b6bbea36"
@@ -386,43 +386,39 @@
         "id": "value",
         "level": "PASS",
         "title": "Value is conserved",
-        "detail": "$3.81 in → $3.83 of position (+0.45% difference).",
+        "detail": "$3.83 in → $3.81 of position (-0.45% difference).",
         "evidence": null
       },
       {
         "id": "exit",
         "level": "PASS",
-        "title": "Exit path exists",
-        "detail": "Exit reached the position check (no position held yet), so the withdraw path is wired up.",
-        "evidence": {
-          "code": 60003001,
-          "name": "INVESTMENT_NO_POSITION",
-          "message": "You don't have any position in this investment product."
-        }
+        "title": "Exit path is open",
+        "detail": "A full exit simulated cleanly.",
+        "evidence": null
       },
       {
         "id": "history",
         "level": "PASS",
         "title": "Rate is normal for this pool",
-        "detail": "0.13% sits at the 14th percentile of 1524 days of record (median 0.30%) since 2022-07-06.",
+        "detail": "0.13% sits at the 11th percentile of 349 days of record (median 0.16%) since 2025-09-18.",
         "evidence": {
-          "samples": 1524,
-          "from": "2022-07-06",
-          "median": 0.30352,
-          "p90": 6.5833,
-          "max": 93.80352,
-          "percentile": 0.14238845144356954,
-          "ratioToMedian": 0.4283078545071165,
+          "samples": 349,
+          "from": "2025-09-18",
+          "median": 0.15905,
+          "p90": 1.40755,
+          "max": 4.58377,
+          "percentile": 0.11174785100286533,
+          "ratioToMedian": 0.817353033637221,
           "project": "venus-core-pool",
-          "poolId": "747b58ab-aefd-42e1-a312-01ad5a0ab7f5",
-          "tvlUsd": 331303206
+          "poolId": "25e50b68-1e0c-47c6-9088-44749ce971b2",
+          "tvlUsd": 68542312
         }
       },
       {
         "id": "capacity",
         "level": "PASS",
         "title": "Pool can absorb this deposit",
-        "detail": "$3.81 is 0.00% of a $331,303,206 pool.",
+        "detail": "$3.83 is 0.00% of a $68,542,312 pool.",
         "evidence": null
       }
     ]
@@ -438,7 +434,7 @@
       "investType": "Earn",
       "apyType": "APY",
       "apy": null,
-      "tvl": "2734.78",
+      "tvl": "2723.22",
       "apyBps": 7,
       "apyDisplay": "0.07%"
     },
@@ -452,7 +448,7 @@
         "id": "listing",
         "level": "PASS",
         "title": "Product accepts deposits",
-        "detail": "Venus Flux BNB — 0.07%, reported TVL $2,734.78",
+        "detail": "Venus Flux BNB — 0.07%, reported TVL $2,723.22",
         "evidence": {
           "binanceChainId": "56",
           "defiProtocolId": "venusflux",
@@ -464,7 +460,7 @@
           "investable": true,
           "apy": null,
           "apyType": "APY",
-          "tvl": "2734.78",
+          "tvl": "2723.22",
           "poolAddress": null,
           "feeRate": null,
           "assetTokenList": [
@@ -491,27 +487,27 @@
         "id": "simulate",
         "level": "PASS",
         "title": "Simulated without broadcasting",
-        "detail": "Would interact with 0x527c2a0b8a3edd9696b4a9443ef66ec30fd7b84a — network fee ≈ $0.0045",
+        "detail": "Would interact with 0x527c2a0b8a3edd9696b4a9443ef66ec30fd7b84a — network fee ≈ $0.0051",
         "evidence": {
           "balanceChange": [
             {
               "tokenSymbol": "BNB",
               "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
               "amount": "-0.005",
-              "valueUsd": "3.810556253017040311896093329444218286860"
+              "valueUsd": "3.811780872360259633150296393578551748135"
             },
             {
               "tokenSymbol": "fWBNB",
               "tokenAddress": "0x527c2a0b8a3edd9696b4a9443ef66ec30fd7b84a",
-              "amount": "0.004994802474511379",
-              "valueUsd": "3.812112348838391667532948079748191568761932441526528006796481725482"
+              "amount": "0.004994801601474419",
+              "valueUsd": "3.8299332808340148755820965566940407787127059844433532952429346876"
             }
           ],
           "feeAndContract": {
             "estimatedNetworkFee": {
-              "amount": "0.000005952654791775",
+              "amount": "0.00000665074079298",
               "tokenSymbol": "BNB",
-              "valueUsd": "0.004537"
+              "valueUsd": "0.005070"
             },
             "interactWith": {
               "address": "0x527c2a0b8a3edd9696b4a9443ef66ec30fd7b84a"
@@ -536,7 +532,7 @@
         "id": "value",
         "level": "PASS",
         "title": "Value is conserved",
-        "detail": "$3.81 in → $3.81 of position (+0.04% difference).",
+        "detail": "$3.81 in → $3.83 of position (+0.48% difference).",
         "evidence": null
       },
       {
@@ -565,14 +561,14 @@
           "ratioToMedian": 0.4401131719585037,
           "project": "venus-core-pool",
           "poolId": "25e50b68-1e0c-47c6-9088-44749ce971b2",
-          "tvlUsd": 68750552
+          "tvlUsd": 68542312
         }
       },
       {
         "id": "capacity",
         "level": "PASS",
         "title": "Pool can absorb this deposit",
-        "detail": "$3.81 is 0.00% of a $68,750,552 pool.",
+        "detail": "$3.81 is 0.00% of a $68,542,312 pool.",
         "evidence": null
       }
     ]
@@ -588,7 +584,7 @@
       "investType": "Earn",
       "apyType": "APY",
       "apy": null,
-      "tvl": "374644088.86",
+      "tvl": "373060981.45",
       "apyBps": 6,
       "apyDisplay": "0.06%"
     },
@@ -602,7 +598,7 @@
         "id": "listing",
         "level": "PASS",
         "title": "Product accepts deposits",
-        "detail": "Lista BNB — 0.06%, reported TVL $374,644,088.86",
+        "detail": "Lista BNB — 0.06%, reported TVL $373,060,981.45",
         "evidence": {
           "binanceChainId": "56",
           "defiProtocolId": "helio",
@@ -614,7 +610,7 @@
           "investable": true,
           "apy": null,
           "apyType": "APY",
-          "tvl": "374644088.86",
+          "tvl": "373060981.45",
           "poolAddress": null,
           "feeRate": null,
           "assetTokenList": [
@@ -641,27 +637,27 @@
         "id": "simulate",
         "level": "PASS",
         "title": "Simulated without broadcasting",
-        "detail": "Would interact with 0x367384c54756a25340c63057d87ea22d47fd5701 — network fee ≈ $0.0456",
+        "detail": "Would interact with 0x367384c54756a25340c63057d87ea22d47fd5701 — network fee ≈ $0.0470",
         "evidence": {
           "balanceChange": [
             {
               "tokenSymbol": "BNB",
               "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
               "amount": "-0.005",
-              "valueUsd": "3.806903371579138462353708285520678371670"
+              "valueUsd": "3.810720650141139139938531898268537259640"
             },
             {
               "tokenSymbol": "ListaBNB",
               "tokenAddress": "0x57134a64b7cd9f9eb72f8255a671f5bf2fe3e2d0",
-              "amount": "0.004919534138478586",
-              "valueUsd": "3.812129913564733119419121076846807990976381774766830333541078303086909696"
+              "amount": "0.00491953399906845",
+              "valueUsd": "3.82992911464754052453625685914364687547441581598993055025468361859424325"
             }
           ],
           "feeAndContract": {
             "estimatedNetworkFee": {
-              "amount": "0.000059876273633352",
+              "amount": "0.00006167541834408",
               "tokenSymbol": "BNB",
-              "valueUsd": "0.045589"
+              "valueUsd": "0.047006"
             },
             "interactWith": {
               "address": "0x367384c54756a25340c63057d87ea22d47fd5701"
@@ -686,7 +682,7 @@
         "id": "value",
         "level": "PASS",
         "title": "Value is conserved",
-        "detail": "$3.81 in → $3.81 of position (+0.14% difference).",
+        "detail": "$3.81 in → $3.83 of position (+0.50% difference).",
         "evidence": null
       },
       {

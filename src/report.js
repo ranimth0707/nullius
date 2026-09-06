@@ -44,7 +44,7 @@ export function renderReport(runs, { amount, chainId, demo } = {}) {
 
   return `<!doctype html><html lang="en"><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>defi-preflight report</title>
+<title>nullius report</title>
 <style>
   :root{--bg:#0f1115;--fg:#e7e9ee;--dim:#9aa3b2;--line:#232733;--card:#161923;
         --pass:#3fb950;--warn:#d29922;--block:#f85149;--accent:#f0b90b}
@@ -87,7 +87,7 @@ export function renderReport(runs, { amount, chainId, demo } = {}) {
   code{background:color-mix(in srgb,var(--fg) 8%,transparent);padding:1px 5px;border-radius:4px;font-size:12px}
 </style>
 <div class="wrap">
-  <h1>defi-preflight</h1>
+  <h1>nullius</h1>
   <p class="lede">Every opportunity below was simulated but never broadcast. The contract each
   deposit would actually touch was read back from the simulation and checked against the BNB Smart
   Chain itself. Anything that could not be verified is refused — inability to verify is not permission.</p>

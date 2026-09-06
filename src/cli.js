@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// defi-preflight — refuses to deposit what it cannot verify.
+// nullius — refuses to deposit what it cannot verify.
 
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { walletStatus, listEarn } from "./baw.js";
@@ -137,7 +137,7 @@ async function cmdCheck() {
   const amount = Number(arg("amount", "0.005"));
   const chainId = arg("chain", "56");
   if (!investmentId) {
-    console.error("Usage: defi-preflight check --investmentId <id> [--token <addr>] [--amount <n>]");
+    console.error("Usage: nullius check --investmentId <id> [--token <addr>] [--amount <n>]");
     process.exit(2);
   }
   const list = await listEarn(chainId);
@@ -157,7 +157,7 @@ const cmd = process.argv[2];
 if (cmd === "scan") await cmdScan();
 else if (cmd === "check") await cmdCheck();
 else {
-  console.log(`defi-preflight — refuses to deposit what it cannot verify.
+  console.log(`nullius — refuses to deposit what it cannot verify.
 
   scan    Screen the highest-yield opportunities and write an HTML report.
           --amount <usd>   deposit size to test (default 10)

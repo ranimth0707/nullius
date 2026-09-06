@@ -1,17 +1,18 @@
 {
-  "name": "defi-preflight",
+  "name": "nullius",
   "version": "0.1.0",
-  "description": "Refuses to deposit into any Binance Agent OS DeFi position it cannot verify on-chain. Fails closed.",
+  "description": "Take nobody's word for it. A deposit gate that verifies Binance Agent OS DeFi products against the chain itself, and fails closed.",
   "type": "module",
   "bin": {
-    "defi-preflight": "src/cli.js"
+    "nullius": "src/cli.js"
   },
   "scripts": {
     "judge": "node src/cli.js scan --demo",
     "scan": "node src/cli.js scan",
     "check": "node src/cli.js check",
-    "test": "node --test test/"
+    "test": "node --test test/*.test.js"
   },
+  "keywords": ["binance", "agent-os", "defi", "bnb-chain", "verification"],
   "engines": {
     "node": ">=22"
   },
