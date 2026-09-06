@@ -10,9 +10,16 @@
     "judge": "node src/cli.js scan --demo",
     "scan": "node src/cli.js scan",
     "check": "node src/cli.js check",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "ui": "node src/serve.js"
   },
-  "keywords": ["binance", "agent-os", "defi", "bnb-chain", "verification"],
+  "keywords": [
+    "binance",
+    "agent-os",
+    "defi",
+    "bnb-chain",
+    "verification"
+  ],
   "engines": {
     "node": ">=22"
   },

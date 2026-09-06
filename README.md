@@ -60,6 +60,23 @@ baw auth signin
 node src/cli.js scan --asset BNB --amount 0.005
 ```
 
+## Dashboard
+
+```bash
+npm run ui        # http://localhost:4173
+```
+
+Every product the DeFi surface offers, listed with its advertised rate and TVL, each row carrying a
+verdict. Click one and it resolves the contract, questions the chain, and expands with all seven
+checks and what each returned.
+
+It runs locally rather than hosted, and that is not a shortcut: `baw` is a CLI holding a session on
+the machine you signed in from. A hosted page has no way to reach it, and giving one a wallet of
+its own would recreate the problem this tool exists to check.
+
+A checkbox filters to assets the wallet actually holds — a deposit can only be simulated for an
+asset you hold, so everything else can be listed but never verified.
+
 ## The problem
 
 `security.md` in `binance/binance-skills-hub` makes a security procedure mandatory before a swap:
@@ -179,6 +196,8 @@ src/llama.js    DefiLlama pool matching and per-pool APY history
 src/checks.js   the seven checks and the fail-closed verdict
 src/report.js   self-contained offline HTML
 src/cli.js      scan / check
+src/serve.js    local dashboard server
+src/ui.js       the dashboard page
 test/           25 tests, including the two defects above as regressions
 ```
 
