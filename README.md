@@ -86,10 +86,20 @@ silently is forbidden.
 No equivalent exists for `defi deposit`. An agent is handed a protocol name and an APY, and that is
 the entire basis on which it moves money.
 
-The basis is thinner than it looks. `investment-list` returns `poolAddress: null` on every product
-and omits `investable` altogether — so the highest-yielding entry on BSC, Aave V3 FDUSD at 12.44%,
-sits at the top of the list and answers `INVESTMENT_NOT_INVESTABLE: this investment product has
-been delisted` the moment a deposit is simulated. An agent that sorts by yield picks it first.
+The basis is thinner than it looks. `investment-list` omits `investable` altogether, so the
+highest-yielding `Earn` entry on BSC — Aave V3 FDUSD at 12.44% — sits at the top of the list and
+answers `INVESTMENT_NOT_INVESTABLE: this investment product has been delisted` the moment a deposit
+is simulated. An agent that sorts by yield picks it first.
+
+`poolAddress` is `null` on all 61 `Earn` products, so for those the listing never says which
+contract a deposit enters. The 529 `LiquidityPool` products do carry it — sampled eight of each,
+the split was 0/8 populated and 8/8.
+
+The two types also report different things into one sortable list. `Earn` reports `APY` and medians
+0.72%. `LiquidityPool` reports `APR`, medians 196%, and tops out at 16,121.58% against $278K of
+TVL. An `APR` on a concentrated-liquidity position is an annualised fee rate, blind to impermanent
+loss — so an agent ranking the combined list by rate lands on a memecoin pool whose headline number
+does not mean what the lending numbers beneath it mean.
 
 One protocol also runs many pools for the same asset at very different rates. Lista's USDT pools
 span 1.81% to 34.69%. Nothing in the listing says which one a deposit enters.
@@ -154,7 +164,10 @@ it establishes that a withdrawal path is wired up, not that a future exit clears
 Protocol mapping to DefiLlama is hand-maintained, and unmapped protocols are reported as having no
 independent record rather than quietly passed.
 
-The sample is 61 products on one chain. Nothing here generalises beyond it.
+**Coverage is 61 of 590.** Chain 56 carries 61 `Earn` products and 529 `LiquidityPool` ones across
+10 protocols. Nullius screens the `Earn` side only. The LP side is both larger and wilder — median
+196% APR — and is where the checks are most needed; extending to it means handling paired assets
+and impermanent loss, neither of which this does yet.
 
 ### Three claims tested and dropped
 
@@ -168,6 +181,10 @@ monotonic, and n=3 in the top bucket. A median-based figure of 24.7× looked con
 artifact of the many 0.00% pools sitting on the verified side.
 
 **That it works across seven chains.** See above.
+
+**That `poolAddress` is null on every product.** Only on `Earn`. All 529 `LiquidityPool` products
+carry it. The claim shipped in an earlier version of the skill PR and was corrected there; the
+corrected version is more useful anyway, because the two types genuinely need different handling.
 
 ### The matching threshold was measured, not chosen
 
