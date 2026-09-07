@@ -5,7 +5,7 @@
 // and only one of them lets a deposit through.
 
 import { investmentInfo, previewDeposit, previewRedeem, previewLpAdd } from "./baw.js";
-import { identify, poolPair, mutability } from "./chain.js";
+import { identify, poolPair, mutability, controlChain } from "./chain.js";
 import { matchPool, apyHistory, normaliseSymbol } from "./llama.js";
 
 export const BLOCK = "BLOCK";
@@ -170,12 +170,32 @@ export async function checkMutability(target) {
       `replace it.`, m);
   }
   const who = m.admin ?? m.beacon ?? m.owner;
+  const chain = who ? await controlChain(who).catch(() => null) : null;
+  const end = chain?.endsAt;
+
+  const trail = chain?.hops?.length
+    ? ` Upgrade authority runs ${chain.hops.map((h) => `${h.address} (${h.kind})`).join(" → ")}.`
+    : "";
+
+  // One private key at the end of the chain is the shape that took $5m out of
+  // Wasabi Protocol in April 2026 and $285m out of Drift, in both cases without
+  // the proxy address ever changing.
+  if (end?.kind === "eoa") {
+    return result("mutability", BLOCK, "One key can replace this code",
+      `${target} is a proxy, and upgrade authority ends at ${end.address}, an ordinary wallet ` +
+      `rather than a timelock or multisig. Whoever holds that key can swap the code behind this ` +
+      `address without the address changing.${trail}`, { ...m, chain });
+  }
+  if (end?.kind === "timelock") {
+    return result("mutability", WARN, "Code can be replaced, but not instantly",
+      `${target} is a proxy. Upgrade authority ends at a timelock with a ` +
+      `${end.minDelaySeconds}s delay, so a change is visible before it takes effect.${trail}`,
+      { ...m, chain });
+  }
   return result("mutability", WARN, "Code can be replaced",
-    `${target} is a proxy: it forwards to ${m.implementation ?? "a beacon-supplied implementation"} ` +
-    `and that target can be changed` +
-    (who ? ` by ${who}` : ` by whoever holds its admin key`) +
-    `. The code confirmed above is what runs today, not necessarily what runs when the money ` +
-    `comes back out.`, m);
+    `${target} forwards to ${m.implementation ?? "a beacon-supplied implementation"}, and that ` +
+    `target can be changed. What was confirmed above is what runs today, not necessarily what ` +
+    `runs when the money comes back out.${trail}`, { ...m, chain });
 }
 
 /** 5. Does the simulated swap of value conserve value? */

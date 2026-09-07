@@ -87,6 +87,57 @@ const addrFromSlot = (h) => (nonZero(h) ? `0x${h.slice(-40)}` : null);
  * necessarily the bytecode running when the money is withdrawn, and whoever holds
  * the admin key decides that.
  */
+/**
+ * Follow upgrade authority to whoever actually holds it.
+ *
+ * A proxy on its own says little. What matters is what sits at the end of the
+ * chain. Wasabi Protocol lost $5m on 30 April 2026 because ADMIN_ROLE sat on a
+ * single externally owned account: one key, no timelock, and the attacker
+ * upgraded the implementation out from under depositors. Drift lost $285m to the
+ * same shape. An admin that is itself a governance contract is a different
+ * proposition from an admin that is one private key.
+ */
+export async function controlChain(start, maxHops = 4) {
+  const hops = [];
+  let cur = start;
+  for (let i = 0; i < maxHops && cur; i += 1) {
+    let code = "0x";
+    try {
+      code = await rpc("eth_getCode", [cur, "latest"]);
+    } catch {
+      hops.push({ address: cur, kind: "unreadable" });
+      break;
+    }
+    const isEOA = !code || code === "0x";
+    if (isEOA) { hops.push({ address: cur, kind: "eoa" }); break; }
+
+    // A timelock or a multisig at the end of the chain is a materially better
+    // answer than a bare key, so name them when they identify themselves.
+    const [delay, threshold] = await Promise.all([
+      rpc("eth_call", [{ to: cur, data: "0xf27a0c92" }, "latest"]).catch(() => null), // getMinDelay()
+      rpc("eth_call", [{ to: cur, data: "0xe75235b8" }, "latest"]).catch(() => null), // getThreshold()
+    ]);
+    const kind = delay && delay !== "0x" ? "timelock"
+      : threshold && threshold !== "0x" ? "multisig"
+      : "contract";
+    hops.push({
+      address: cur, kind,
+      minDelaySeconds: kind === "timelock" ? Number(BigInt(delay)) : undefined,
+      threshold: kind === "multisig" ? Number(BigInt(threshold)) : undefined,
+    });
+    if (kind !== "contract") break;
+
+    let owner = null;
+    try {
+      owner = await rpc("eth_call", [{ to: cur, data: "0x8da5cb5b" }, "latest"]);
+    } catch { /* no owner() to follow */ }
+    const next = addrFromSlot(owner);
+    if (!next || next.toLowerCase() === cur.toLowerCase()) break;
+    cur = next;
+  }
+  return { hops, endsAt: hops[hops.length - 1] ?? null };
+}
+
 export async function mutability(address) {
   const [impl, admin, beacon, legacy, owner] = await Promise.all([
     rpc("eth_getStorageAt", [address, SLOT.impl, "latest"]).catch(() => null),
