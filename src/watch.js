@@ -106,12 +106,13 @@ export async function run({ quiet = false } = {}) {
   }
   if (!quiet) process.stderr.write("\r");
 
-  const state = {
-    chain: "56",
-    checkedAt: new Date().toISOString(),
-    watching: entries.length,
-    observations,
-  };
+  // No timestamp in here on purpose. A "last checked at" field changes on every
+  // pass, so the file would differ every time and the scheduled job would commit
+  // a new time every four hours whether or not anything happened. Then a real
+  // change is one commit among hundreds of empty ones. The commit date already
+  // records when it was checked; this file records only what was seen, so a diff
+  // here means something actually moved.
+  const state = { chain: "56", watching: entries.length, observations };
   writeFileSync(STATE, JSON.stringify(state, null, 2) + "\n", "utf8");
 
   return { changes, watching: entries.length, firstRun: !existsSync(STATE) || !Object.keys(before.observations).length };
