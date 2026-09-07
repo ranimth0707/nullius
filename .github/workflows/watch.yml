@@ -1,0 +1,52 @@
+name: watchtower
+
+# Every four hours. The watchlist is committed, so this needs no wallet, no
+# Binance account and no secrets: checking what an address currently forwards to
+# is a public read. Each run commits what it saw, which makes the git history the
+# record. An implementation that changes cannot be quietly changed back.
+on:
+  schedule:
+    - cron: "17 */4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check what each address forwards to
+        id: watch
+        continue-on-error: true
+        run: node src/watch.js | tee watch-output.txt
+
+      - name: Record it
+        run: |
+          git config user.name "Ranimth07"
+          git config user.email "260931980+ranimth0707@users.noreply.github.com"
+          if git diff --quiet -- data/implementations.json; then
+            echo "nothing moved"
+            exit 0
+          fi
+          git add data/implementations.json
+          if [ "${{ steps.watch.outcome }}" = "failure" ]; then
+            git commit -m "watchtower: an implementation changed
+
+          $(sed -n '1,40p' watch-output.txt)"
+          else
+            git commit -m "watchtower: routine observation"
+          fi
+          git push
+
+      - name: Fail the run when something moved
+        if: steps.watch.outcome == 'failure'
+        run: |
+          echo "::error::A watched contract now forwards somewhere else."
+          cat watch-output.txt
+          exit 1

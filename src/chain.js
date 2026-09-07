@@ -101,13 +101,9 @@ export async function controlChain(start, maxHops = 4) {
   const hops = [];
   let cur = start;
   for (let i = 0; i < maxHops && cur; i += 1) {
-    let code = "0x";
-    try {
-      code = await rpc("eth_getCode", [cur, "latest"]);
-    } catch {
-      hops.push({ address: cur, kind: "unreadable" });
-      break;
-    }
+    // Same rule as above: a failed read is not an observation, so let it throw
+    // and let the caller decide, rather than recording "unreadable" as a fact.
+    const code = await rpc("eth_getCode", [cur, "latest"]);
     const isEOA = !code || code === "0x";
     if (isEOA) { hops.push({ address: cur, kind: "eoa" }); break; }
 
@@ -139,13 +135,20 @@ export async function controlChain(start, maxHops = 4) {
 }
 
 export async function mutability(address) {
-  const [impl, admin, beacon, legacy, owner] = await Promise.all([
-    rpc("eth_getStorageAt", [address, SLOT.impl, "latest"]).catch(() => null),
-    rpc("eth_getStorageAt", [address, SLOT.admin, "latest"]).catch(() => null),
-    rpc("eth_getStorageAt", [address, SLOT.beacon, "latest"]).catch(() => null),
-    rpc("eth_getStorageAt", [address, SLOT.legacy, "latest"]).catch(() => null),
-    rpc("eth_call", [{ to: address, data: "0x8da5cb5b" }, "latest"]).catch(() => null),
+  // Storage reads are not allowed to fail quietly. Every address has storage, so
+  // an error here is transport, not absence, and swallowing it would record "no
+  // admin" for something that simply did not answer. A monitor built on that
+  // reports changes that never happened.
+  const [impl, admin, beacon, legacy] = await Promise.all([
+    rpc("eth_getStorageAt", [address, SLOT.impl, "latest"]),
+    rpc("eth_getStorageAt", [address, SLOT.admin, "latest"]),
+    rpc("eth_getStorageAt", [address, SLOT.beacon, "latest"]),
+    rpc("eth_getStorageAt", [address, SLOT.legacy, "latest"]),
   ]);
+  // owner() is different: plenty of contracts genuinely do not implement it, and
+  // a revert there is an answer rather than a failure.
+  const owner = await rpc("eth_call", [{ to: address, data: "0x8da5cb5b" }, "latest"])
+    .catch(() => null);
   const implementation = addrFromSlot(impl) ?? addrFromSlot(legacy);
   return {
     isProxy: Boolean(implementation) || nonZero(beacon),

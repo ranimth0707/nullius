@@ -13,7 +13,8 @@
     "test": "node --test test/*.test.js",
     "ui": "node src/serve.js",
     "bot": "node src/bot.js",
-    "survey": "node src/survey.js"
+    "survey": "node src/survey.js",
+    "watch": "node src/watch.js"
   },
   "keywords": [
     "binance",

@@ -1,0 +1,375 @@
+{
+  "chain": "56",
+  "checkedAt": "2026-09-07T14:40:41.287Z",
+  "watching": 66,
+  "observations": {
+    "0x03f59988f5c366046321cccd2bf0e3878e2ed69c": {
+      "address": "0x03f59988f5c366046321cccd2bf0e3878e2ed69c",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x14ca9d552ed2cf0d5dfd1f89bc6793a464e2ed16": {
+      "address": "0x14ca9d552ed2cf0d5dfd1f89bc6793a464e2ed16",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x16d6c6198df91a537dc2405f3194f8bffa4ef426": {
+      "address": "0x16d6c6198df91a537dc2405f3194f8bffa4ef426",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x1adb950d8bb3da4be104211d5ab038628e477fe6": {
+      "address": "0x1adb950d8bb3da4be104211d5ab038628e477fe6",
+      "isProxy": true,
+      "implementation": "0x86ba884d68cabe2a6e8f1f1f3b5540efd6e2dc55",
+      "admin": "0x8ce30a8d13d6d729708232aa415d7da46a4fa07b",
+      "controlEndsAt": "0x07d274a68393e8b8a2ccf19a2ce4ba3518735253",
+      "controlKind": "timelock"
+    },
+    "0x1b87567de134dbe30e29953c477f1cbc3d626b6b": {
+      "address": "0x1b87567de134dbe30e29953c477f1cbc3d626b6b",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x1f7083a138f980b60eb1582f01ca3b1d6c46ad10": {
+      "address": "0x1f7083a138f980b60eb1582f01ca3b1d6c46ad10",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x2f31ab8950c50080e77999fa456372f276952fd8": {
+      "address": "0x2f31ab8950c50080e77999fa456372f276952fd8",
+      "isProxy": true,
+      "implementation": "0x7f52773065fd350b5a935ce2b293fdb16551a6fc",
+      "admin": null
+    },
+    "0x30a8b6ba24d3649d66c5c40888dc4a3af0be404c": {
+      "address": "0x30a8b6ba24d3649d66c5c40888dc4a3af0be404c",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x31d3f4016ff42be89468868ba3ee3f6d70ac6f49": {
+      "address": "0x31d3f4016ff42be89468868ba3ee3f6d70ac6f49",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x353d328efbef48b79a570cbc2fde20f40e9f2063": {
+      "address": "0x353d328efbef48b79a570cbc2fde20f40e9f2063",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x3663bf9ba7f368e9cadc247d224080ec814f1429": {
+      "address": "0x3663bf9ba7f368e9cadc247d224080ec814f1429",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x367384c54756a25340c63057d87ea22d47fd5701": {
+      "address": "0x367384c54756a25340c63057d87ea22d47fd5701",
+      "isProxy": true,
+      "implementation": "0x76c2919d75132af92f765c3b923c6fd9b0c1a5b6",
+      "admin": null
+    },
+    "0x3a97f913c1b534612374d3bcb7b71c7735e43d3f": {
+      "address": "0x3a97f913c1b534612374d3bcb7b71c7735e43d3f",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d": {
+      "address": "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x4a4bea953813c118c260be9a26b2321e57aa62e5": {
+      "address": "0x4a4bea953813c118c260be9a26b2321e57aa62e5",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x4d1b90273d5b0ea98101154d73a6c7d7a19884db": {
+      "address": "0x4d1b90273d5b0ea98101154d73a6c7d7a19884db",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x527c2a0b8a3edd9696b4a9443ef66ec30fd7b84a": {
+      "address": "0x527c2a0b8a3edd9696b4a9443ef66ec30fd7b84a",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x52c231aa6f12c10ad6298c6ec652175e566bf429": {
+      "address": "0x52c231aa6f12c10ad6298c6ec652175e566bf429",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x534d3930edba2c0b90a7973549a0287141c987ef": {
+      "address": "0x534d3930edba2c0b90a7973549a0287141c987ef",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x548e2d5451ff232294b1031b8e971415657c175d": {
+      "address": "0x548e2d5451ff232294b1031b8e971415657c175d",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x5a5a549379da0d7fe856c787dafab43c3fadc778": {
+      "address": "0x5a5a549379da0d7fe856c787dafab43c3fadc778",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x5a76a552f857aa4dc505740b6821278bf158adc2": {
+      "address": "0x5a76a552f857aa4dc505740b6821278bf158adc2",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x5ef8249dc300d1c74a9a228609e1be36bbd13c69": {
+      "address": "0x5ef8249dc300d1c74a9a228609e1be36bbd13c69",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x6701b287c8170d6c290c6f4ef426782bd61ae310": {
+      "address": "0x6701b287c8170d6c290c6f4ef426782bd61ae310",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x6fae7301f1b7c0ab83d69a855447491f2b585876": {
+      "address": "0x6fae7301f1b7c0ab83d69a855447491f2b585876",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x7530beb7bde5843f668cf31b996fa1f748c9b6b1": {
+      "address": "0x7530beb7bde5843f668cf31b996fa1f748c9b6b1",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x7cb113b487e025b3a69537fca579559433240cb5": {
+      "address": "0x7cb113b487e025b3a69537fca579559433240cb5",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x83fcd80d7973cca1aa821590bbec66d27a2d4ad4": {
+      "address": "0x83fcd80d7973cca1aa821590bbec66d27a2d4ad4",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x89da4102853c6cf3f4e9979cbb1dc4a166f38e84": {
+      "address": "0x89da4102853c6cf3f4e9979cbb1dc4a166f38e84",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x8cda56bb7928be2e7f3143c15edc8c1c5f88aa8c": {
+      "address": "0x8cda56bb7928be2e7f3143c15edc8c1c5f88aa8c",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x908d49048eb3a7bedfd238972403842805eaf2be": {
+      "address": "0x908d49048eb3a7bedfd238972403842805eaf2be",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x913a4ed1636c474e6451b5e9249d94046a24bb33": {
+      "address": "0x913a4ed1636c474e6451b5e9249d94046a24bb33",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x9485ff32b6b4444c21d5abe4d9a2283d127075a2": {
+      "address": "0x9485ff32b6b4444c21d5abe4d9a2283d127075a2",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x94a177b18c83123e6b6202191dcdd092e5638fcb": {
+      "address": "0x94a177b18c83123e6b6202191dcdd092e5638fcb",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x96afaff3bcb6bae929f027a6bcb35ab1337ca34e": {
+      "address": "0x96afaff3bcb6bae929f027a6bcb35ab1337ca34e",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x985881340a67d072235e955677a38006fcb14d03": {
+      "address": "0x985881340a67d072235e955677a38006fcb14d03",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x9950c1f3754fb8a3ebbaf24b8573cafc7474c00f": {
+      "address": "0x9950c1f3754fb8a3ebbaf24b8573cafc7474c00f",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x9e3fa02e31638bbff8b11d7aa416e9a10dec3505": {
+      "address": "0x9e3fa02e31638bbff8b11d7aa416e9a10dec3505",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0x9e75ced0a01590890917c5180c3e3ed6a86a071e": {
+      "address": "0x9e75ced0a01590890917c5180c3e3ed6a86a071e",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xa07c5b74c9b40447a954e1466938b865b6bbea36": {
+      "address": "0xa07c5b74c9b40447a954e1466938b865b6bbea36",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xab058332a7279f1e64162be08f59ac0cd9601759": {
+      "address": "0xab058332a7279f1e64162be08f59ac0cd9601759",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xacb622435b634e75b61473be6f839c46e36bd754": {
+      "address": "0xacb622435b634e75b61473be6f839c46e36bd754",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xafab4441d8b354bba790229c0e235e7e6187b3d0": {
+      "address": "0xafab4441d8b354bba790229c0e235e7e6187b3d0",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xb2c92bd2666c8921495af2436adb2512687b8c06": {
+      "address": "0xb2c92bd2666c8921495af2436adb2512687b8c06",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xbd0dbc5830d49ee8b3f068bff495e891e015fd7c": {
+      "address": "0xbd0dbc5830d49ee8b3f068bff495e891e015fd7c",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xbed17ca05ca914ed977f86c53e8f2607d9f1c9ec": {
+      "address": "0xbed17ca05ca914ed977f86c53e8f2607d9f1c9ec",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xbf3693031c272be6d539d79a9715561229a8fba9": {
+      "address": "0xbf3693031c272be6d539d79a9715561229a8fba9",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xc2151a561e928d16576d75ea88544543ac63d80b": {
+      "address": "0xc2151a561e928d16576d75ea88544543ac63d80b",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xce6160bb594fc055c943f59de92cee30b8c6b32c": {
+      "address": "0xce6160bb594fc055c943f59de92cee30b8c6b32c",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xd9704dabefd6500b9b469ee02e00a0b3b0ab6f8a": {
+      "address": "0xd9704dabefd6500b9b469ee02e00a0b3b0ab6f8a",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xdb25c09d96c165b62f6e6f9d9b17174738d897ba": {
+      "address": "0xdb25c09d96c165b62f6e6f9d9b17174738d897ba",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xdfb4c4785ed9dcd051cfe55ab7bc7b0c0b9c209d": {
+      "address": "0xdfb4c4785ed9dcd051cfe55ab7bc7b0c0b9c209d",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xdfeab54f1aabea0d3e1af8a778a76e648275d113": {
+      "address": "0xdfeab54f1aabea0d3e1af8a778a76e648275d113",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xe5ae318389b8d6d09370a675479c64862152d126": {
+      "address": "0xe5ae318389b8d6d09370a675479c64862152d126",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xee04b2a82bab9efefcd626f5d66f51cc2b6fa12a": {
+      "address": "0xee04b2a82bab9efefcd626f5d66f51cc2b6fa12a",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xeee6c8b83be11e53388227f161ba9c0962e785df": {
+      "address": "0xeee6c8b83be11e53388227f161ba9c0962e785df",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xf6a5f768f583a695b6cdd772fb138921c5bae4e9": {
+      "address": "0xf6a5f768f583a695b6cdd772fb138921c5bae4e9",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xfad3b1b70868e16e93e323ea1375e2136a6c829a": {
+      "address": "0xfad3b1b70868e16e93e323ea1375e2136a6c829a",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xfafdd70cd35ef9eeb46032a59cfe1433a8356ca2": {
+      "address": "0xfafdd70cd35ef9eeb46032a59cfe1433a8356ca2",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xfc4e77248b76fefc27c4cac7151a2ee5b5cc590e": {
+      "address": "0xfc4e77248b76fefc27c4cac7151a2ee5b5cc590e",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    },
+    "0xffba9d0f281193de9ee4e9050a5561ff9e08ae7b": {
+      "address": "0xffba9d0f281193de9ee4e9050a5561ff9e08ae7b",
+      "isProxy": false,
+      "implementation": null,
+      "admin": null
+    }
+  }
+}

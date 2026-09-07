@@ -1,5 +1,6 @@
 .DS_Store
 .env
 .env.*
+data/survey-latest.json
 node_modules/
 reports/
