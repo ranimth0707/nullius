@@ -7,6 +7,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { listInvestments, walletStatus, baw } from "./baw.js";
 import { preflight, screen, PASS, WARN, BLOCK, UNTESTED } from "./checks.js";
+import { stage, peek, commit } from "./execute.js";
 
 // ---------------------------------------------------------------- config
 
@@ -67,13 +68,17 @@ const BACK = [{ text: "◀️ Back", callback_data: "home" }];
 
 const HOME_KEYS = {
   inline_keyboard: [
-    [{ text: "✅ Pools that check out", callback_data: "ok:LiquidityPool" },
-     { text: "✅ Lending that checks out", callback_data: "ok:Earn" }],
+    [{ text: "💰 Put my money to work", callback_data: "work" }],
     [{ text: "🎯 Show me the trap", callback_data: "compare" }],
-    [{ text: "📋 Everything Binance lists", callback_data: "list:LiquidityPool" },
+    [{ text: "💧 Check a pool first", callback_data: "ok:LiquidityPool" },
      { text: "❓ How this works", callback_data: "help" }],
   ],
 };
+
+const NATIVE_BNB = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+
+/** Deposit sizes offered once a product clears, in the asset it is denominated in. */
+const SIZES = [0.005, 0.01, 0.02];
 
 // ---------------------------------------------------------------- screens
 
@@ -96,7 +101,8 @@ async function homeText() {
     `that\\. The listing never says which contract you are actually entering\\.\n\n` +
     `I find that contract before anything is signed, ask the chain what it really is, and stop ` +
     `when the answer does not match\\.\n\n` +
-    `👇 New here? Start with *Show me the trap*, then look at what checks out\\.`;
+    `👇 Tap *Put my money to work*\\. I will find something, check it against the chain, ` +
+    `and ask you before anything is sent\\.`;
 }
 
 const HELP =
@@ -317,6 +323,111 @@ async function runCheck(chat, target, type) {
   return id ? edit(chat, id, text, keys) : send(chat, text, keys);
 }
 
+/**
+ * The main flow. Find something the wallet can actually enter, verify it, and
+ * offer to do it.
+ */
+async function putToWork(chat, userId) {
+  await typing(chat);
+  const [items, bal] = await Promise.all([
+    products("Earn"),
+    baw(["wallet", "balance", "--binanceChainId", "56"]).catch(() => ({ ok: false })),
+  ]);
+  if (!items) return send(chat, "Could not reach the Binance listing right now\\.", HOME_KEYS);
+
+  const held = new Set((bal.ok ? bal.data ?? [] : []).map((t) => String(t.symbol).toUpperCase()));
+  const norm = (s) => String(s).toUpperCase().replace(/^BSC_/, "").replace(/^W(?=BNB$|ETH$)/, "");
+  const candidates = items.filter((i) => [...held].some((h) => norm(h) === norm(i.investmentName)));
+
+  if (!candidates.length) {
+    return send(chat,
+      `Your wallet holds nothing that any lending product on this chain takes\\.\n\n` +
+      `Fund it with BNB and try again\\.`, HOME_KEYS);
+  }
+
+  const m = await send(chat,
+    `🔍 *Working through ${candidates.length} lending products your wallet can actually enter\\.*\n\n` +
+    `_Checking each one against the chain, best rate first\\. Nothing is broadcast yet\\._`);
+  const mid = m?.result?.message_id;
+
+  // Best rate first, and stop at the first one that survives everything.
+  let cleared = null, tried = 0;
+  const rejected = [];
+  for (const inv of candidates) {
+    tried += 1;
+    const v = await preflight({ investment: inv, amount: SIZES[0], chainId: "56" });
+    if (v.verdict === "GO") { cleared = { inv, v }; break; }
+    rejected.push(`${inv.investmentName} · ${inv.protocolName} · ${inv.apyDisplay}`);
+  }
+
+  if (!cleared) {
+    return edit(chat, mid,
+      `⛔️ *Nothing cleared\\.*\n\nI checked ${tried} products your wallet could enter and not one ` +
+      `of them survived\\.\n\n${rejected.map((r) => `• ${esc(r)}`).join("\n")}\n\n` +
+      `That is the answer, not a failure to find you something\\.`, HOME_KEYS);
+  }
+
+  const { inv, v } = cleared;
+  const label = `${inv.protocolName} ${inv.investmentName} @ ${inv.apyDisplay}`;
+  const token = v.checks.find((c) => c.id === "listing")?.evidence?.assetTokenList?.[0]?.tokenAddress
+    ?? NATIVE_BNB;
+
+  const skipped = rejected.length
+    ? `\n\nPassed over on the way here: ${esc(rejected.join(", "))}\\.`
+    : "";
+
+  const keys = {
+    inline_keyboard: [
+      SIZES.map((s) => ({
+        text: `Deposit ${s} ${inv.investmentName}`,
+        callback_data: `stage:${stage({ investmentId: inv.investmentId, tokenAddress: token,
+          amount: s, label, ownerId: userId })}`,
+      })),
+      BACK,
+    ],
+  };
+
+  return edit(chat, mid,
+    `${renderVerdict(label, v)}${skipped}\n\n` +
+    `_Pick a size and I will send it\\. This one actually spends money\\._`, keys);
+}
+
+/** Show exactly what is about to happen, then require one more tap. */
+async function confirmStage(chat, nonce, userId) {
+  const i = peek(nonce);
+  if (!i || String(i.ownerId) !== String(userId)) {
+    return send(chat, "That confirmation has expired\\. Run the check again\\.", HOME_KEYS);
+  }
+  return send(chat,
+    `⚠️ *About to spend real money\\.*\n\n` +
+    `Depositing *${esc(String(i.amount))}* into *${esc(i.label)}*\\.\n\n` +
+    `This broadcasts a transaction on BNB Smart Chain and cannot be undone from here\\.`,
+    { inline_keyboard: [
+      [{ text: "✅ Yes, deposit now", callback_data: `go:${nonce}` }],
+      [{ text: "✖️ Cancel", callback_data: "home" }],
+    ] });
+}
+
+async function doDeposit(chat, nonce, userId) {
+  await typing(chat);
+  const m = await send(chat, `📡 Sending\\.\\.\\.`);
+  const r = await commit(nonce, userId);
+  const mid = m?.result?.message_id;
+
+  if (!r.ok) {
+    return edit(chat, mid,
+      `⛔️ *Did not go through\\.*\n\n${esc(r.error?.name ?? "")}: ${esc(r.error?.message ?? "")}`,
+      HOME_KEYS);
+  }
+  const tx = r.data?.txHash ?? "";
+  return edit(chat, mid,
+    `✅ *Sent\\.*\n\nDeposited *${esc(String(r.intent.amount))}* into *${esc(r.intent.label)}*\\.\n\n` +
+    `\`${esc(tx)}\`\n\n` +
+    `[View on BscScan](https://bscscan.com/tx/${tx})\n\n` +
+    `_Submitted, not yet confirmed\\. The destination should match the contract I verified above\\._`,
+    HOME_KEYS);
+}
+
 /** The side by side: no preflight, then preflight, on the same product. */
 async function runCompare(chat) {
   await typing(chat);
@@ -354,9 +465,13 @@ async function onCallback(q) {
   if (!ALLOWED.includes(String(q.from?.id ?? ""))) return;
 
   const d = q.data ?? "";
+  const userId = q.from?.id;
   if (d === "home") return showHome(chat);
   if (d === "help") return send(chat, HELP, { inline_keyboard: [BACK] });
   if (d === "compare") return runCompare(chat);
+  if (d === "work") return putToWork(chat, userId);
+  if (d.startsWith("stage:")) return confirmStage(chat, d.slice(6), userId);
+  if (d.startsWith("go:")) return doDeposit(chat, d.slice(3), userId);
   if (d.startsWith("list:")) return showList(chat, d.slice(5));
   if (d.startsWith("ok:")) return showVerified(chat, d.slice(3));
   if (d.startsWith("chk:")) {
@@ -383,6 +498,8 @@ async function handle(msg) {
   if (/^\/(start|home)\b/.test(text) || !text.startsWith("/") && text.length < 3) return showHome(chat);
   if (/^\/help\b/.test(text)) return send(chat, HELP, { inline_keyboard: [BACK] });
   if (/^\/compare\b/.test(text)) return runCompare(chat);
+  if (/^\/work\b/.test(text) || /\b(deposit|invest|put .*(money|bnb).*work)\b/i.test(text))
+    return putToWork(chat, msg.from?.id);
   if (/^\/earn\b/.test(text)) return showList(chat, "Earn");
   if (/^\/pools\b/.test(text)) return showList(chat, "LiquidityPool");
 
