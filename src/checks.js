@@ -4,7 +4,7 @@
 // permission. "We could not verify this" and "this is fine" are different answers,
 // and only one of them lets a deposit through.
 
-import { investmentInfo, previewDeposit, previewRedeem } from "./baw.js";
+import { investmentInfo, previewDeposit, previewRedeem, previewLpAdd } from "./baw.js";
 import { identify } from "./chain.js";
 import { matchPool, apyHistory, normaliseSymbol } from "./llama.js";
 
@@ -41,6 +41,8 @@ export async function checkListing(investmentId) {
   }
   const { investable, protocolName, investmentName, apyDisplay, tvl } = r.data;
   if (investable === false) {
+    // defi.md already requires this: on investable:false an agent "MUST refuse
+    // new deposit / lp-add requests". The rule exists; nothing enforces it.
     return result("listing", BLOCK, "Product is delisted",
       `${protocolName} ${investmentName} still appears in the listing at ${apyDisplay}, ` +
       `but no longer accepts deposits.`, r.data);
@@ -215,6 +217,72 @@ export async function checkHistory(investment) {
     `${h.samples} days of record (median ${h.median.toFixed(2)}%) since ${h.from}.`, ev);
 }
 
+/**
+ * 8. For liquidity pools: what else does this take?
+ *
+ * `lp-add` accepts one token and one amount, but the wallet debits both pool
+ * tokens and does not swap the input into the pair. Nothing states the second
+ * requirement in advance — the simulation is what discloses it, either as a
+ * second debit in `balanceChange` or as the address in an insufficient-balance
+ * error. Either way the user asked to spend one asset and would spend two.
+ */
+export async function checkPairing(investment, tokenAddress, amount, chainId) {
+  const r = await previewLpAdd(investment.investmentId, tokenAddress, amount, 5, chainId);
+
+  if (!r.ok) {
+    const m = /Insufficient balance for (0x[0-9a-fA-F]{40}): required ([0-9.]+)/.exec(
+      r.error?.message ?? "");
+    if (m) {
+      const [, addr, need] = m;
+      let named = addr;
+      try {
+        const id = await identify(addr);
+        if (id.symbol || id.name) named = `${id.name ?? id.symbol} (${id.symbol ?? "?"})`;
+      } catch { /* fall back to the bare address */ }
+      const isInput = addr.toLowerCase() === String(tokenAddress).toLowerCase();
+      return result("pairing", isInput ? UNTESTED : BLOCK,
+        isInput ? "Not simulated — asset not held" : "Deposit also requires a second asset",
+        isInput
+          ? `The wallet does not hold enough of the named asset to simulate this.`
+          : `Adding ${amount} of the named token also requires ${need} of ${named}, which the ` +
+            `command never mentions and the wallet does not hold. One asset was asked for; two ` +
+            `would be spent.`, r.error);
+    }
+    return result("pairing", UNTESTED, "Liquidity add not simulated",
+      `${r.error?.name}: ${r.error?.message}`, r.error);
+  }
+
+  const debits = (r.data?.balanceChange ?? []).filter((c) => Number(c.amount) < 0);
+  if (debits.length > 1) {
+    const list = debits.map((d) => `${Math.abs(Number(d.amount))} ${d.tokenSymbol}`).join(" and ");
+    return result("pairing", WARN, "Deposit draws on two assets",
+      `The command names one token, but the simulation debits ${list}.`, r.data);
+  }
+  return result("pairing", PASS, "Only the named asset is drawn",
+    "The simulation debits nothing beyond the token given.", r.data);
+}
+
+/**
+ * 9. Is the advertised rate the kind of number it looks like?
+ *
+ * Earn reports APY, liquidity pools report APR, and both land in one sortable
+ * list. An APR on a concentrated-liquidity position is an annualised fee rate:
+ * it is not a return anyone receives, and it says nothing about impermanent
+ * loss. Ranking the two together is a comparison that does not hold.
+ */
+export function checkRateType(investment, info) {
+  const type = info?.apyType ?? null;
+  const rate = Number(investment.apyBps) / 100;
+  if (investment.investType !== "LiquidityPool" && info?.investType !== "LiquidityPool") {
+    return result("ratetype", PASS, "Rate is a yield",
+      `Reported as ${type ?? "APY"} — a return, comparable with other ${type ?? "APY"} figures.`);
+  }
+  return result("ratetype", WARN, "Rate is a fee rate, not a yield",
+    `Reported as ${type ?? "APR"} at ${rate.toLocaleString("en-US")}%. On a concentrated-liquidity ` +
+    `position that is an annualised trading-fee rate — not a return received, and blind to ` +
+    `impermanent loss. It cannot be compared against the APY figures on lending products.`);
+}
+
 /** 7. Is the pool big enough to absorb this deposit? */
 export function checkCapacity(depositUsd, poolTvlUsd) {
   if (!poolTvlUsd || poolTvlUsd <= 0 || !depositUsd) {
@@ -256,11 +324,30 @@ export async function preflight({ investment, tokenAddress, amount, chainId = "5
     return { verdict: "NO-GO", blocked: 2, warned: 0, checks };
   }
 
-  const sim = await checkSimulation(investmentId, token, amount, chainId);
+  const isLp = (investment.investType ?? listing.evidence?.investType) === "LiquidityPool";
+  checks.push(checkRateType(investment, listing.evidence));
+
+  // A liquidity add is a different transaction from a deposit — `preview --action
+  // deposit` is not valid for a pool — so LP products are simulated through
+  // lp-add, and that same simulation stands in for the deposit step.
+  let sim;
+  if (isLp) {
+    const pairing = await checkPairing(investment, token, amount, chainId);
+    checks.push(pairing);
+    sim = pairing.level === PASS || pairing.level === WARN
+      ? result("simulate", PASS, "Simulated without broadcasting",
+          `Liquidity add simulated; would interact with ` +
+          `${pairing.evidence?.feeAndContract?.interactWith?.address ?? "an unnamed contract"}.`,
+          pairing.evidence)
+      : result("simulate", pairing.level, "Liquidity add not simulated",
+          "The pairing probe did not return a simulation, so no contract was revealed.");
+  } else {
+    sim = await checkSimulation(investmentId, token, amount, chainId);
+  }
   checks.push(sim);
 
-  if (sim.level === PASS) {
-    const target = sim.evidence.feeAndContract.interactWith.address;
+  const target = sim.evidence?.feeAndContract?.interactWith?.address;
+  if (sim.level === PASS && target) {
     checks.push(await checkIdentity(target, investment));
     checks.push(checkValue(sim.evidence));
   } else {

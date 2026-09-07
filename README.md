@@ -117,12 +117,23 @@ anything is signed.
 | Check | Refuses when |
 |---|---|
 | Listing | the product is delisted, or its status is unstated |
+| Rate type | an `APR` is being read as though it were a yield |
+| Pairing | a liquidity add would draw on an asset the command never named |
 | Simulation | the deposit can't be simulated, or names no contract |
 | Identity | the chain says that contract belongs to a different protocol |
 | Value | the simulated deposit loses value before fees |
 | Exit | no withdrawal path can be confirmed |
 | History | the rate sits far outside the pool's own multi-year record |
 | Capacity | the deposit would own more than 5% of the pool |
+
+The listing check is not novel — `defi.md` already requires an agent to refuse a product with
+`investable: false`. The rule exists; nothing enforces it, and `investment-list` doesn't carry the
+field. The rest of the checks have no counterpart in the documentation.
+
+The pairing check exists because of a line in `defi.md`: *"You name one token; the wallet debits
+BOTH."* `lp-add` takes a single `--tokenAddress` and `--amount`, but a pool position needs both
+sides and the wallet will not swap for you. Nothing states the second requirement in advance — the
+simulation is what discloses it.
 
 Verdicts are three-valued. A product can pass, fail a check outright, or produce no evidence in
 either direction — a contract that implements no `name()`, an asset the wallet doesn't hold.
@@ -143,7 +154,26 @@ Screening the BNB-denominated Earn products on BSC at a $3.81 test deposit, **on
 contracts hold code but expose no `name()` or `symbol()`, so nothing could be established either
 way.
 
-The cleared deposit was then executed for real:
+### The liquidity-pool side
+
+`--type LiquidityPool` screens the other 529. The highest-rate product on the whole surface,
+PancakeSwap V3 `BNB-BREW` at 14,651.56% APR, fails on two counts:
+
+```text
+! Rate is a fee rate, not a yield
+  Reported as APR at 14,651.56%. On a concentrated-liquidity position that is an
+  annualised trading-fee rate — not a return received, and blind to impermanent loss.
+
+✗ Deposit also requires a second asset
+  Adding 0.002 of the named token also requires 94.005285574988627206 of BREW (BREW),
+  which the command never mentions and the wallet does not hold.
+```
+
+Asking to add roughly $1.50 of BNB would also have spent 94 BREW. The command names one asset; two
+leave the wallet. The requirement is discoverable only by attempting the simulation, which is what
+this does.
+
+### The cleared deposit was then executed for real
 
 ```text
 0x97ef86f6b1c659d0d2efb56577ee1a211615b220e1c8cb8ca57fb739e8676999
@@ -164,10 +194,11 @@ it establishes that a withdrawal path is wired up, not that a future exit clears
 Protocol mapping to DefiLlama is hand-maintained, and unmapped protocols are reported as having no
 independent record rather than quietly passed.
 
-**Coverage is 61 of 590.** Chain 56 carries 61 `Earn` products and 529 `LiquidityPool` ones across
-10 protocols. Nullius screens the `Earn` side only. The LP side is both larger and wilder — median
-196% APR — and is where the checks are most needed; extending to it means handling paired assets
-and impermanent loss, neither of which this does yet.
+Chain 56 carries 61 `Earn` products and 529 `LiquidityPool` ones across 10 protocols. Both types
+are screened, but not equally: the LP path reads the second-asset requirement out of a failed
+simulation, so when the wallet happens to hold both sides that particular disclosure never fires
+and the check falls back to reading both debits from the successful preview. Impermanent loss is
+named, never modelled.
 
 ### Three claims tested and dropped
 

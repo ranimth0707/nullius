@@ -44,9 +44,15 @@ export async function baw(args, { timeoutMs = 60_000 } = {}) {
 export const walletStatus = () => baw(["wallet", "status"]);
 export const walletSettings = () => baw(["wallet", "settings"]);
 
-export const listEarn = (chainId = "56", size = 100) =>
-  baw(["defi", "investment-list", "--investType", "Earn",
+/** The surface exposes exactly two types; `Loan` is documented in --help but rejected. */
+export const INVEST_TYPES = ["Earn", "LiquidityPool"];
+
+export const listInvestments = (investType = "Earn", chainId = "56", size = 100) =>
+  baw(["defi", "investment-list", "--investType", investType,
        "--binanceChainId", String(chainId), "--size", String(size)]);
+
+export const listEarn = (chainId = "56", size = 100) =>
+  listInvestments("Earn", chainId, size);
 
 export const investmentInfo = (investmentId) =>
   baw(["defi", "investment-info", "--investmentId", investmentId]);
@@ -62,3 +68,16 @@ export const previewRedeem = (investmentId, tokenAddress, chainId = "56") =>
   baw(["defi", "preview", "--action", "redeem",
        "--investmentId", investmentId, "--tokenAddress", tokenAddress,
        "--ratio", "1", "--binanceChainId", String(chainId)]);
+
+/**
+ * Simulate adding liquidity.
+ *
+ * `lp-add` takes one token and one amount, but the wallet debits BOTH pool
+ * tokens — it does not swap the input into the pair. The second requirement is
+ * never stated up front; attempting the simulation is what discloses it.
+ */
+export const previewLpAdd = (investmentId, tokenAddress, amount, priceRangePct = 5, chainId = "56") =>
+  baw(["defi", "preview", "--action", "lp-add",
+       "--investmentId", investmentId, "--tokenAddress", tokenAddress,
+       "--amount", String(amount), "--priceRange", String(priceRangePct),
+       "--binanceChainId", String(chainId)]);

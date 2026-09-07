@@ -2,7 +2,7 @@
 // nullius — refuses to deposit what it cannot verify.
 
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
-import { walletStatus, listEarn } from "./baw.js";
+import { walletStatus, listEarn, listInvestments } from "./baw.js";
 import { preflight, BLOCK, WARN, PASS, UNTESTED } from "./checks.js";
 import { renderReport } from "./report.js";
 
@@ -83,18 +83,21 @@ async function cmdScan() {
     }
   } else {
     await requireWallet();
-    const list = await listEarn(chainId);
+    const type = arg("type", "Earn");
+    const list = await listInvestments(type, chainId);
     if (!list.ok) {
       console.error("Could not list opportunities:", list.error);
       process.exit(1);
     }
     const asset = arg("asset");
     const items = list.data.list
-      .filter((i) => !asset || String(i.investmentName).toUpperCase() === asset.toUpperCase())
+      .map((i) => ({ ...i, investType: i.investType ?? type }))
+      .filter((i) => !asset || String(i.investmentName).toUpperCase().split("-")
+        .includes(asset.toUpperCase()))
       .sort((a, b) => Number(b.apyBps) - Number(a.apyBps))
       .slice(0, limit);
     if (items.length === 0) {
-      console.error(`No Earn products found${asset ? ` for asset ${asset}` : ""}.`);
+      console.error(`No ${type} products found${asset ? ` for asset ${asset}` : ""}.`);
       process.exit(1);
     }
 
@@ -162,6 +165,7 @@ else {
   scan    Screen the highest-yield opportunities and write an HTML report.
           --amount <usd>   deposit size to test (default 10)
           --limit <n>      how many to screen (default 8)
+          --type <t>       Earn (default) or LiquidityPool
           --demo           replay a recorded run; no wallet or funds needed
 
   check   Run the full preflight on one product.

@@ -2,7 +2,7 @@
 // `baw` is a local CLI — there is no hosted version of this and there cannot be.
 
 import { createServer } from "node:http";
-import { listEarn, walletStatus, baw } from "./baw.js";
+import { listInvestments, walletStatus, baw } from "./baw.js";
 import { preflight } from "./checks.js";
 import { page } from "./ui.js";
 
@@ -43,7 +43,8 @@ const server = createServer(async (req, res) => {
   }
 
   if (url.pathname === "/api/list") {
-    const r = await listEarn(url.searchParams.get("chain") ?? "56");
+    const type = url.searchParams.get("type") ?? "Earn";
+    const r = await listInvestments(type, url.searchParams.get("chain") ?? "56");
     if (!r.ok) return json(res, 502, { error: r.error });
     const list = r.data.list
       .map((i) => ({
@@ -54,16 +55,18 @@ const server = createServer(async (req, res) => {
         apyBps: Number(i.apyBps),
         tvl: Number(i.tvl),
         defiProtocolId: i.defiProtocolId,
+        investType: type,
       }))
       .sort((a, b) => b.apyBps - a.apyBps);
-    return json(res, 200, { list });
+    return json(res, 200, { list, type });
   }
 
   if (url.pathname === "/api/check" && req.method === "POST") {
-    const { investmentId, amount } = await readBody(req);
-    const r = await listEarn("56");
+    const { investmentId, amount, type = "Earn" } = await readBody(req);
+    const r = await listInvestments(type, "56");
     if (!r.ok) return json(res, 502, { error: r.error });
-    const investment = r.data.list.find((i) => i.investmentId === investmentId);
+    const found = r.data.list.find((i) => i.investmentId === investmentId);
+    const investment = found ? { ...found, investType: type } : null;
     if (!investment) return json(res, 404, { error: "not in the current listing" });
     const verdict = await preflight({ investment, amount: Number(amount) || 0.005 });
     return json(res, 200, verdict);

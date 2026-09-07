@@ -67,6 +67,10 @@ export const page = () => `<!doctype html><html lang="en"><meta charset="utf-8">
   <div class="bar" id="bar"></div>
 
   <div class="toolbar">
+    <select id="type">
+      <option value="Earn">Earn — lending, reports APY</option>
+      <option value="LiquidityPool">Liquidity pools — reports APR</option>
+    </select>
     <label style="color:var(--dim);font-size:13px">Deposit tested
       <input id="amt" value="0.005" size="6" style="margin-left:6px"></label>
     <label style="color:var(--dim);font-size:13px">
@@ -135,7 +139,7 @@ async function check(i,expand=true){
   if(state[i.investmentId]==="running")return;
   state[i.investmentId]="running";render();
   const r=await fetch("/api/check",{method:"POST",headers:{"content-type":"application/json"},
-    body:JSON.stringify({investmentId:i.investmentId,amount:amt.value})});
+    body:JSON.stringify({investmentId:i.investmentId,amount:amt.value,type:type.value})});
   state[i.investmentId]=await r.json();
   if(expand)open.add(i.investmentId);
   render();
@@ -156,11 +160,17 @@ all.onclick=async()=>{
   for(let k=0;k<list.length;k++){prog.textContent=(k+1)+" of "+list.length;await check(list[k],false);}
   prog.textContent="done";all.disabled=false;
 };
+async function load(){
+  prog.textContent="loading…";
+  const d=await(await fetch("/api/list?type="+encodeURIComponent(type.value))).json();
+  items=d.list||[];state={};open.clear();prog.textContent="";render();
+}
+type.onchange=load;
 (async()=>{
   const s=await(await fetch("/api/status")).json();
   if(!s.connected)offline.hidden=false;
   const [d,h]=await Promise.all([
-    fetch("/api/list").then(r=>r.json()),
+    fetch("/api/list?type=Earn").then(r=>r.json()),
     fetch("/api/holdings").then(r=>r.json()).catch(()=>({held:[]}))]);
   items=d.list||[];held=h.held||[];
   holdnote.textContent=held.length
