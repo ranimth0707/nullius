@@ -66,12 +66,13 @@ const typing = (chat) => tg("sendChatAction", { chat_id: chat, action: "typing" 
 
 const BACK = [{ text: "◀️ Back", callback_data: "home" }];
 
+// Two things this is for, and one explanation. "Show me the trap" is a
+// demonstration rather than a feature, so it lives on /compare and not here.
 const HOME_KEYS = {
   inline_keyboard: [
     [{ text: "💰 Put my money to work", callback_data: "work" }],
-    [{ text: "🎯 Show me the trap", callback_data: "compare" }],
-    [{ text: "💧 Check a pool first", callback_data: "ok:LiquidityPool" },
-     { text: "❓ How this works", callback_data: "help" }],
+    [{ text: "🔍 Check something before I deposit elsewhere", callback_data: "ok:LiquidityPool" }],
+    [{ text: "❓ How this works", callback_data: "help" }],
   ],
 };
 
@@ -144,17 +145,21 @@ function productKeys(items, type) {
 }
 
 function renderVerdict(label, v) {
-  const head = v.verdict === "GO"
+  const gaps = v.checks.filter((c) => c.level === UNTESTED).length;
+  const head = v.verdict === "GO" || v.verdict === "VERIFIED"
     ? `✅ *Cleared* · ${esc(label)}`
     : v.reason === "failed"
       ? `⛔️ *Refused* · ${esc(label)}`
-      : `◽️ *Refused, nothing could be checked* · ${esc(label)}`;
+      : `◽️ *Refused* · ${esc(label)}`;
   const body = v.checks.map((c) => `${MARK[c.level]} *${esc(c.title)}*\n${esc(c.detail)}`).join("\n\n");
-  const tail = v.verdict === "GO"
+  // The old wording claimed nothing could be checked even when most of it had
+  // been, which contradicted the ticks directly above it.
+  const tail = v.verdict === "GO" || v.verdict === "VERIFIED"
     ? "\n\nEverything I can check, checks out\\."
     : v.reason === "failed"
       ? "\n\nSomething failed outright\\. I would not put money here\\."
-      : "\n\nNothing failed\\. Nothing could be confirmed either, and that is not permission\\.";
+      : `\n\nNothing failed, but ${gaps === 1 ? "one check" : `${gaps} checks`} could not be ` +
+        `completed at all\\. Not being able to confirm something is not permission\\.`;
   return `${head}\n\n${body}${tail}`;
 }
 

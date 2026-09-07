@@ -69,6 +69,42 @@ export function decodeStringReturn(hex) {
   return out || null;
 }
 
+// EIP-1967 storage slots, plus the older OpenZeppelin one.
+const SLOT = {
+  impl:  "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+  admin: "0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103",
+  beacon:"0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+  legacy:"0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3",
+};
+const nonZero = (h) => typeof h === "string" && /[1-9a-f]/i.test(h.slice(2));
+const addrFromSlot = (h) => (nonZero(h) ? `0x${h.slice(-40)}` : null);
+
+/**
+ * Can this contract be replaced out from under a depositor?
+ *
+ * Verifying what a contract calls itself is worth little if someone can swap the
+ * code behind that name tomorrow. A proxy means the bytecode checked today is not
+ * necessarily the bytecode running when the money is withdrawn, and whoever holds
+ * the admin key decides that.
+ */
+export async function mutability(address) {
+  const [impl, admin, beacon, legacy, owner] = await Promise.all([
+    rpc("eth_getStorageAt", [address, SLOT.impl, "latest"]).catch(() => null),
+    rpc("eth_getStorageAt", [address, SLOT.admin, "latest"]).catch(() => null),
+    rpc("eth_getStorageAt", [address, SLOT.beacon, "latest"]).catch(() => null),
+    rpc("eth_getStorageAt", [address, SLOT.legacy, "latest"]).catch(() => null),
+    rpc("eth_call", [{ to: address, data: "0x8da5cb5b" }, "latest"]).catch(() => null),
+  ]);
+  const implementation = addrFromSlot(impl) ?? addrFromSlot(legacy);
+  return {
+    isProxy: Boolean(implementation) || nonZero(beacon),
+    implementation,
+    admin: addrFromSlot(admin),
+    beacon: addrFromSlot(beacon),
+    owner: addrFromSlot(owner),
+  };
+}
+
 /** True when the address holds deployed bytecode (i.e. is a contract, not an EOA). */
 export async function hasCode(address) {
   const code = await rpc("eth_getCode", [address, "latest"]);

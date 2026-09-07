@@ -5,7 +5,7 @@
 // and only one of them lets a deposit through.
 
 import { investmentInfo, previewDeposit, previewRedeem, previewLpAdd } from "./baw.js";
-import { identify, poolPair } from "./chain.js";
+import { identify, poolPair, mutability } from "./chain.js";
 import { matchPool, apyHistory, normaliseSymbol } from "./llama.js";
 
 export const BLOCK = "BLOCK";
@@ -146,7 +146,39 @@ export async function checkIdentity(target, claim) {
     onchain);
 }
 
-/** 4. Does the simulated swap of value conserve value? */
+/**
+ * 4. Can the code be swapped after it has been checked?
+ *
+ * Confirming what a contract calls itself is worth little on its own. If it sits
+ * behind a proxy, the bytecode verified at deposit time is not necessarily the
+ * bytecode running at withdrawal time, and whoever holds the admin key decides
+ * that. This is the difference between a contract that cannot change and one that
+ * merely has not changed yet, and it is a far better reason to hesitate than a
+ * missing name().
+ */
+export async function checkMutability(target) {
+  let m;
+  try {
+    m = await mutability(target);
+  } catch (err) {
+    return result("mutability", UNTESTED, "Could not read the contract's storage",
+      `The chain did not answer: ${err.message}`);
+  }
+  if (!m.isProxy) {
+    return result("mutability", PASS, "Code cannot be swapped",
+      `${target} holds its own logic. What was verified here is what runs, and nobody can ` +
+      `replace it.`, m);
+  }
+  const who = m.admin ?? m.beacon ?? m.owner;
+  return result("mutability", WARN, "Code can be replaced",
+    `${target} is a proxy: it forwards to ${m.implementation ?? "a beacon-supplied implementation"} ` +
+    `and that target can be changed` +
+    (who ? ` by ${who}` : ` by whoever holds its admin key`) +
+    `. The code confirmed above is what runs today, not necessarily what runs when the money ` +
+    `comes back out.`, m);
+}
+
+/** 5. Does the simulated swap of value conserve value? */
 export function checkValue(preview) {
   const changes = preview?.balanceChange ?? [];
   if (changes.length < 2) {
@@ -340,15 +372,18 @@ export async function screen({ investment, chainId = "56" }) {
   checks.push(checkRateType(investment, listing.evidence));
 
   const pool = listing.evidence?.poolAddress ?? null;
-  const [identity, hist] = await Promise.all([
+  const [identity, mut, hist] = await Promise.all([
     pool
       ? checkIdentity(pool, investment)
       : Promise.resolve(result("identity", UNTESTED, "No published contract",
           "This product publishes no pool address, so it can only be identified by simulating a " +
           "deposit, which needs the asset in hand.")),
+    pool ? checkMutability(pool) : Promise.resolve(null),
     checkHistory(investment),
   ]);
-  checks.push(identity, hist);
+  checks.push(identity);
+  if (mut) checks.push(mut);
+  checks.push(hist);
 
   const blocked = checks.filter((c) => c.level === BLOCK).length;
   const untested = checks.filter((c) => c.level === UNTESTED).length;
@@ -391,17 +426,20 @@ export async function preflight({ investment, tokenAddress, amount, chainId = "5
   if (isLp) {
     const pairing = await checkPairing(investment, token, amount, chainId);
     checks.push(pairing);
+    // The pairing probe is the simulation for a pool. Only record a separate
+    // simulation entry when it actually produced one, otherwise the same failure
+    // gets reported twice under two different names.
     sim = pairing.level === PASS || pairing.level === WARN
       ? result("simulate", PASS, "Simulated without broadcasting",
           `Liquidity add simulated; would interact with ` +
           `${pairing.evidence?.feeAndContract?.interactWith?.address ?? "an unnamed contract"}.`,
           pairing.evidence)
-      : result("simulate", pairing.level, "Liquidity add not simulated",
-          "The pairing probe did not return a simulation, so no contract was revealed.");
+      : null;
   } else {
     sim = await checkSimulation(investmentId, token, amount, chainId);
   }
-  checks.push(sim);
+  if (sim) checks.push(sim);
+  else sim = { level: UNTESTED, evidence: null };
 
   // The exit probe and the rate history do not depend on the simulation, so they
   // run alongside the identity lookup rather than queueing behind it. On a chat
@@ -424,6 +462,7 @@ export async function preflight({ investment, tokenAddress, amount, chainId = "5
     checkHistory(investment),
   ]);
   checks.push(identity);
+  if (target) checks.push(await checkMutability(target));
   if (sim.level === PASS && target) checks.push(checkValue(sim.evidence));
   checks.push(exit, hist);
 
