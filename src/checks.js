@@ -5,7 +5,7 @@
 // and only one of them lets a deposit through.
 
 import { investmentInfo, previewDeposit, previewRedeem, previewLpAdd } from "./baw.js";
-import { identify } from "./chain.js";
+import { identify, poolPair } from "./chain.js";
 import { matchPool, apyHistory, normaliseSymbol } from "./llama.js";
 
 export const BLOCK = "BLOCK";
@@ -93,9 +93,26 @@ export async function checkIdentity(target, claim) {
     return result("identity", BLOCK, "Target holds no code",
       `${target} is not a deployed contract on this chain.`, onchain);
   }
-  // A vault or staking contract is under no obligation to implement name()/symbol().
-  // Silence is not a contradiction — it means this route cannot identify it, which
-  // is reported as untested rather than as a mismatch.
+  // A pool names no name(), but it does say which two tokens it holds. Check the
+  // advertised pair against what the pool actually contains.
+  if (!onchain.name && !onchain.symbol) {
+    const pair = await poolPair(target);
+    if (pair) {
+      const want = String(claim.investmentName ?? "").toUpperCase().split(/[-\/]/)
+        .map((s) => alnum(s.replace(/^BSC_/, ""))).filter(Boolean);
+      const got = [pair.token0, pair.token1].map((t) => alnum(t.symbol ?? ""));
+      const seen = `${pair.token0.symbol ?? "?"} and ${pair.token1.symbol ?? "?"}`;
+      const matched = want.filter((w) =>
+        got.some((g) => g === w || g === `W${w}` || w === `W${g}` || g.includes(w)));
+      if (matched.length === want.length && want.length > 0) {
+        return result("identity", PASS, "Pool contents confirmed on-chain",
+          `The pool at ${target} holds ${seen}, which is the pair the listing advertises.`, pair);
+      }
+      return result("identity", BLOCK, "Pool holds different tokens",
+        `The listing advertises ${claim.investmentName}, but the pool at ${target} holds ` +
+        `${seen}.`, pair);
+    }
+  }
   if (!onchain.name && !onchain.symbol) {
     return result("identity", UNTESTED, "Contract does not name itself",
       `${target} holds code but exposes no name() or symbol(), so its identity could not be ` +
@@ -305,6 +322,46 @@ export function checkCapacity(depositUsd, poolTvlUsd) {
 /** The native-coin sentinel address used by the wallet for BNB. */
 export const NATIVE_BNB = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
+/**
+ * Screen a product without spending or holding anything.
+ *
+ * Two different questions were tangled together here. "Is this product what it
+ * claims to be" can be answered from the listing and the chain alone. "Is it
+ * safe to deposit this amount right now" needs a simulation, and a simulation
+ * needs the asset in hand. Folding them together meant every product the wallet
+ * could not afford came back refused, which is useless for choosing anything.
+ *
+ * Screening answers the first question only, and says so.
+ */
+export async function screen({ investment, chainId = "56" }) {
+  const checks = [];
+  const listing = await checkListing(investment.investmentId);
+  checks.push(listing);
+  checks.push(checkRateType(investment, listing.evidence));
+
+  const pool = listing.evidence?.poolAddress ?? null;
+  const [identity, hist] = await Promise.all([
+    pool
+      ? checkIdentity(pool, investment)
+      : Promise.resolve(result("identity", UNTESTED, "No published contract",
+          "This product publishes no pool address, so it can only be identified by simulating a " +
+          "deposit, which needs the asset in hand.")),
+    checkHistory(investment),
+  ]);
+  checks.push(identity, hist);
+
+  const blocked = checks.filter((c) => c.level === BLOCK).length;
+  const untested = checks.filter((c) => c.level === UNTESTED).length;
+  return {
+    mode: "screen",
+    verdict: blocked === 0 && untested === 0 ? "VERIFIED" : "UNVERIFIED",
+    reason: blocked > 0 ? "failed" : untested > 0 ? "unverified" : "clear",
+    blocked, untested,
+    warned: checks.filter((c) => c.level === WARN).length,
+    checks,
+  };
+}
+
 /** Run every check. Returns { verdict, checks } with verdict GO or NO-GO. */
 export async function preflight({ investment, tokenAddress, amount, chainId = "56" }) {
   const checks = [];
@@ -349,14 +406,20 @@ export async function preflight({ investment, tokenAddress, amount, chainId = "5
   // The exit probe and the rate history do not depend on the simulation, so they
   // run alongside the identity lookup rather than queueing behind it. On a chat
   // front end that is the difference between a wait and an abandonment.
-  const target = sim.evidence?.feeAndContract?.interactWith?.address;
+  // Liquidity pools publish poolAddress in investment-info, so their contract can
+  // go straight to the chain without holding either asset. Lending products return
+  // null there and the simulation is the only way to reach the address.
+  const target = sim.evidence?.feeAndContract?.interactWith?.address
+    ?? listing.evidence?.poolAddress
+    ?? null;
+
   const [identity, exit, hist] = await Promise.all([
-    sim.level === PASS && target
+    target
       ? checkIdentity(target, investment)
       : Promise.resolve(result("identity", sim.level === UNTESTED ? UNTESTED : BLOCK,
           "Contract never revealed",
-          "Without a simulation there is no contract address to put to the chain, so the " +
-          "product's identity is unverified either way.")),
+          "The listing publishes no pool address and the deposit could not be simulated, so " +
+          "there is nothing to put to the chain.")),
     checkExit(investmentId, token, chainId),
     checkHistory(investment),
   ]);

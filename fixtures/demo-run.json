@@ -1,122 +1,238 @@
 [
   {
-    "label": "Lista BNB @ 1.50%",
+    "label": "PancakeSwap V3 BNB-BREW @ 16,005.93%",
     "investment": {
       "binanceChainId": "56",
-      "defiProtocolId": "helio",
-      "protocolName": "Lista",
-      "investmentId": "7dfe2f1bdd78f824365329edb4dc4772af2b1b93f47bf24eecb7fcdd426a45dd",
-      "investmentName": "BNB",
-      "investType": "Earn",
-      "apyType": "APY",
+      "defiProtocolId": "pancakeswap3",
+      "protocolName": "PancakeSwap V3",
+      "investmentId": "b89478d224df4b9d6a21e0bf849e8de97d63c361e8bb61e529fa2acd044b05ab",
+      "investmentName": "BNB-BREW",
+      "investType": "LiquidityPool",
+      "apyType": "APR",
       "apy": null,
-      "tvl": "724322810.95",
-      "apyBps": 150,
-      "apyDisplay": "1.50%"
+      "tvl": "868340.01",
+      "apyBps": 1600593,
+      "apyDisplay": "16,005.93%"
     },
     "verdict": "NO-GO",
-    "reason": "unverified",
-    "blocked": 0,
-    "untested": 1,
-    "warned": 2,
+    "reason": "failed",
+    "blocked": 3,
+    "untested": 0,
+    "warned": 3,
     "checks": [
       {
         "id": "listing",
         "level": "PASS",
         "title": "Product accepts deposits",
-        "detail": "Lista BNB — 1.50%, reported TVL $724,322,810.95",
+        "detail": "PancakeSwap V3 BNB-BREW — 16,005.93%, reported TVL $868,340.01",
         "evidence": {
           "binanceChainId": "56",
-          "defiProtocolId": "helio",
-          "protocolName": "Lista",
-          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20240927/cee2f697-b4ea-4baf-955d-858d9eeac4f3.png",
-          "investmentId": "7dfe2f1bdd78f824365329edb4dc4772af2b1b93f47bf24eecb7fcdd426a45dd",
-          "investmentName": "BNB",
-          "investType": "Earn",
+          "defiProtocolId": "pancakeswap3",
+          "protocolName": "PancakeSwap V3",
+          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20250527/06ab0ee1-8382-4416-9395-15446112b09b.png",
+          "investmentId": "b89478d224df4b9d6a21e0bf849e8de97d63c361e8bb61e529fa2acd044b05ab",
+          "investmentName": "BNB-BREW",
+          "investType": "LiquidityPool",
           "investable": true,
           "apy": null,
-          "apyType": "APY",
-          "tvl": "724322810.95",
-          "poolAddress": null,
-          "feeRate": null,
+          "apyType": "APR",
+          "tvl": "868340.01",
+          "poolAddress": "0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d",
+          "feeRate": "0.01",
           "assetTokenList": [
             {
               "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
               "tokenName": "BNB Chain Native Token",
               "tokenSymbol": "BNB"
-            }
-          ],
-          "rewardTokenList": [
+            },
             {
-              "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-              "tokenName": "BNB Chain Native Token",
-              "tokenSymbol": "BNB"
+              "tokenAddress": "0xfa6d9b504848606eb9aec04ccc161d169b3f2159",
+              "tokenName": "BREW",
+              "tokenSymbol": "BREW"
             }
           ],
+          "rewardTokenList": [],
           "lpTokenList": [],
           "borrowTokenList": [],
-          "apyBps": 150,
-          "apyDisplay": "1.50%"
+          "apyBps": 1600593,
+          "apyDisplay": "16,005.93%"
         }
       },
       {
         "id": "ratetype",
-        "level": "PASS",
-        "title": "Rate is a yield",
-        "detail": "Reported as APY — a return, comparable with other APY figures.",
+        "level": "WARN",
+        "title": "Rate is a fee rate, not a yield",
+        "detail": "Reported as APR at 16,005.93%. On a concentrated-liquidity position that is an annualised trading-fee rate — not a return received, and blind to impermanent loss. It cannot be compared against the APY figures on lending products.",
         "evidence": null
+      },
+      {
+        "id": "pairing",
+        "level": "BLOCK",
+        "title": "Deposit also requires a second asset",
+        "detail": "Adding 0.002 of the named token also requires 92.20668868752935342 of BREW (BREW), which the command never mentions and the wallet does not hold. One asset was asked for; two would be spent.",
+        "evidence": {
+          "code": 953814,
+          "name": "SERVICE_ERROR",
+          "message": "Insufficient balance for 0xfa6d9b504848606eb9aec04ccc161d169b3f2159: required 92.20668868752935342, available 0"
+        }
       },
       {
         "id": "simulate",
-        "level": "PASS",
-        "title": "Simulated without broadcasting",
-        "detail": "Would interact with 0x1adb950d8bb3da4be104211d5ab038628e477fe6 — network fee ≈ $0.0032",
-        "evidence": {
-          "balanceChange": [
-            {
-              "tokenSymbol": "BNB",
-              "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-              "amount": "-0.005",
-              "valueUsd": "3.735813089121194776672315988437962889015"
-            },
-            {
-              "tokenSymbol": "slisBNB",
-              "tokenAddress": "0xb0b84d294e0c75a6abe60171b70edeb2efd14a1b",
-              "amount": "0.004816592286091851",
-              "valueUsd": "3.724124694551622814312187584843475517585584375942899180433647451634"
-            }
-          ],
-          "feeAndContract": {
-            "estimatedNetworkFee": {
-              "amount": "0.000004346572314734",
-              "tokenSymbol": "BNB",
-              "valueUsd": "0.003248"
-            },
-            "interactWith": {
-              "address": "0x1adb950d8bb3da4be104211d5ab038628e477fe6"
-            }
-          },
-          "warnings": []
-        }
+        "level": "BLOCK",
+        "title": "Liquidity add not simulated",
+        "detail": "The pairing probe did not return a simulation, so no contract was revealed.",
+        "evidence": null
       },
       {
         "id": "identity",
-        "level": "UNTESTED",
-        "title": "Contract does not name itself",
-        "detail": "0x1adb950d8bb3da4be104211d5ab038628e477fe6 holds code but exposes no name() or symbol(), so its identity could not be confirmed this way. It was not shown to be wrong — it could not be read.",
+        "level": "PASS",
+        "title": "Pool contents confirmed on-chain",
+        "detail": "The pool at 0x3ea3f9a7b7edbfe0ba3568bfc0f30ba870b7553d holds WBNB and BREW, which is the pair the listing advertises.",
         "evidence": {
-          "address": "0x1adb950d8bb3da4be104211d5ab038628e477fe6",
-          "isContract": true,
-          "symbol": null,
-          "name": null
+          "token0": {
+            "address": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
+            "isContract": true,
+            "symbol": "WBNB",
+            "name": "Wrapped BNB"
+          },
+          "token1": {
+            "address": "0xfa6d9b504848606eb9aec04ccc161d169b3f2159",
+            "isContract": true,
+            "symbol": "BREW",
+            "name": "BREW"
+          }
         }
       },
       {
-        "id": "value",
-        "level": "PASS",
-        "title": "Value is conserved",
-        "detail": "$3.74 in → $3.72 of position (-0.31% difference).",
+        "id": "exit",
+        "level": "BLOCK",
+        "title": "Exit path could not be confirmed",
+        "detail": "Simulating a withdrawal returned NETWORK_ERROR: Connection reset by server",
+        "evidence": {
+          "code": 50001001,
+          "name": "NETWORK_ERROR",
+          "message": "Connection reset by server"
+        }
+      },
+      {
+        "id": "history",
+        "level": "WARN",
+        "title": "No independent record of this pool",
+        "detail": "No third-party record exists for PancakeSwap V3 BNB-BREW, so today's 16005.93% cannot be compared against any history.",
         "evidence": null
+      },
+      {
+        "id": "capacity",
+        "level": "WARN",
+        "title": "Pool size unknown",
+        "detail": "Could not establish independent pool size, so deposit impact is unknown.",
+        "evidence": null
+      }
+    ]
+  },
+  {
+    "label": "PancakeSwap V3 ELONCOIN-DOGE @ 13,679.50%",
+    "investment": {
+      "binanceChainId": "56",
+      "defiProtocolId": "pancakeswap3",
+      "protocolName": "PancakeSwap V3",
+      "investmentId": "9eeea61c57e2502c3a9d52a4a3b8f12ad34fd0247ab225d1017c622dd99fc841",
+      "investmentName": "ELONCOIN-DOGE",
+      "investType": "LiquidityPool",
+      "apyType": "APR",
+      "apy": null,
+      "tvl": "76589.77",
+      "apyBps": 1367950,
+      "apyDisplay": "13,679.50%"
+    },
+    "verdict": "NO-GO",
+    "reason": "unverified",
+    "blocked": 0,
+    "untested": 2,
+    "warned": 3,
+    "checks": [
+      {
+        "id": "listing",
+        "level": "PASS",
+        "title": "Product accepts deposits",
+        "detail": "PancakeSwap V3 ELONCOIN-DOGE — 13,679.50%, reported TVL $76,589.77",
+        "evidence": {
+          "binanceChainId": "56",
+          "defiProtocolId": "pancakeswap3",
+          "protocolName": "PancakeSwap V3",
+          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20250527/06ab0ee1-8382-4416-9395-15446112b09b.png",
+          "investmentId": "9eeea61c57e2502c3a9d52a4a3b8f12ad34fd0247ab225d1017c622dd99fc841",
+          "investmentName": "ELONCOIN-DOGE",
+          "investType": "LiquidityPool",
+          "investable": true,
+          "apy": null,
+          "apyType": "APR",
+          "tvl": "76589.77",
+          "poolAddress": "0xdfb4c4785ed9dcd051cfe55ab7bc7b0c0b9c209d",
+          "feeRate": "0.01",
+          "assetTokenList": [
+            {
+              "tokenAddress": "0x7e1bedc29dac6826f36b2e579675d8f71559c298",
+              "tokenName": "ElonCoin",
+              "tokenSymbol": "ELONCOIN"
+            },
+            {
+              "tokenAddress": "0xba2ae424d960c26247dd6c32edc70b295c744c43",
+              "tokenName": "Dogecoin",
+              "tokenSymbol": "DOGE"
+            }
+          ],
+          "rewardTokenList": [],
+          "lpTokenList": [],
+          "borrowTokenList": [],
+          "apyBps": 1367950,
+          "apyDisplay": "13,679.50%"
+        }
+      },
+      {
+        "id": "ratetype",
+        "level": "WARN",
+        "title": "Rate is a fee rate, not a yield",
+        "detail": "Reported as APR at 13,679.5%. On a concentrated-liquidity position that is an annualised trading-fee rate — not a return received, and blind to impermanent loss. It cannot be compared against the APY figures on lending products.",
+        "evidence": null
+      },
+      {
+        "id": "pairing",
+        "level": "UNTESTED",
+        "title": "Liquidity add not simulated",
+        "detail": "INSUFFICIENT_BALANCE: Insufficient balance. Your available ELONCOIN balance is 0.",
+        "evidence": {
+          "code": 20002002,
+          "name": "INSUFFICIENT_BALANCE",
+          "message": "Insufficient balance. Your available ELONCOIN balance is 0."
+        }
+      },
+      {
+        "id": "simulate",
+        "level": "UNTESTED",
+        "title": "Liquidity add not simulated",
+        "detail": "The pairing probe did not return a simulation, so no contract was revealed.",
+        "evidence": null
+      },
+      {
+        "id": "identity",
+        "level": "PASS",
+        "title": "Pool contents confirmed on-chain",
+        "detail": "The pool at 0xdfb4c4785ed9dcd051cfe55ab7bc7b0c0b9c209d holds ELONCOIN and DOGE, which is the pair the listing advertises.",
+        "evidence": {
+          "token0": {
+            "address": "0x7e1bedc29dac6826f36b2e579675d8f71559c298",
+            "isContract": true,
+            "symbol": "ELONCOIN",
+            "name": "ElonCoin"
+          },
+          "token1": {
+            "address": "0xba2ae424d960c26247dd6c32edc70b295c744c43",
+            "isContract": true,
+            "symbol": "DOGE",
+            "name": "Dogecoin"
+          }
+        }
       },
       {
         "id": "exit",
@@ -132,8 +248,139 @@
       {
         "id": "history",
         "level": "WARN",
-        "title": "Cannot tell which pool this is",
-        "detail": "3 independent pools carry this protocol and asset, and none advertises a matching rate — the nearest is 1.14% against the listed 1.50% (0.36pp apart). Which pool a deposit would enter cannot be established, so its history cannot be read.",
+        "title": "No independent record of this pool",
+        "detail": "No third-party record exists for PancakeSwap V3 ELONCOIN-DOGE, so today's 13679.50% cannot be compared against any history.",
+        "evidence": null
+      },
+      {
+        "id": "capacity",
+        "level": "WARN",
+        "title": "Pool size unknown",
+        "detail": "Could not establish independent pool size, so deposit impact is unknown.",
+        "evidence": null
+      }
+    ]
+  },
+  {
+    "label": "Uniswap V3 USDT-BEN @ 13,660.88%",
+    "investment": {
+      "binanceChainId": "56",
+      "defiProtocolId": "uniswap3",
+      "protocolName": "Uniswap V3",
+      "investmentId": "96f4c1a84a393d8468517f3afc2b9bc5b1434e3ea1638a5be0912b2f31b8632c",
+      "investmentName": "USDT-BEN",
+      "investType": "LiquidityPool",
+      "apyType": "APR",
+      "apy": null,
+      "tvl": "290420.06",
+      "apyBps": 1366088,
+      "apyDisplay": "13,660.88%"
+    },
+    "verdict": "NO-GO",
+    "reason": "unverified",
+    "blocked": 0,
+    "untested": 2,
+    "warned": 3,
+    "checks": [
+      {
+        "id": "listing",
+        "level": "PASS",
+        "title": "Product accepts deposits",
+        "detail": "Uniswap V3 USDT-BEN — 13,660.88%, reported TVL $290,420.06",
+        "evidence": {
+          "binanceChainId": "56",
+          "defiProtocolId": "uniswap3",
+          "protocolName": "Uniswap V3",
+          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20260318/290f0a92-454d-4e9f-9b51-6e59ecfbf0e9.png",
+          "investmentId": "96f4c1a84a393d8468517f3afc2b9bc5b1434e3ea1638a5be0912b2f31b8632c",
+          "investmentName": "USDT-BEN",
+          "investType": "LiquidityPool",
+          "investable": true,
+          "apy": null,
+          "apyType": "APR",
+          "tvl": "290420.06",
+          "poolAddress": "0xb2c92bd2666c8921495af2436adb2512687b8c06",
+          "feeRate": "0.01",
+          "assetTokenList": [
+            {
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "tokenName": "Tether USDT",
+              "tokenSymbol": "USDT"
+            },
+            {
+              "tokenAddress": "0x7bc70ae0f2a67d2fdc0180a697a611f21c857777",
+              "tokenName": "BEN",
+              "tokenSymbol": "BEN"
+            }
+          ],
+          "rewardTokenList": [],
+          "lpTokenList": [],
+          "borrowTokenList": [],
+          "apyBps": 1366088,
+          "apyDisplay": "13,660.88%"
+        }
+      },
+      {
+        "id": "ratetype",
+        "level": "WARN",
+        "title": "Rate is a fee rate, not a yield",
+        "detail": "Reported as APR at 13,660.88%. On a concentrated-liquidity position that is an annualised trading-fee rate — not a return received, and blind to impermanent loss. It cannot be compared against the APY figures on lending products.",
+        "evidence": null
+      },
+      {
+        "id": "pairing",
+        "level": "UNTESTED",
+        "title": "Liquidity add not simulated",
+        "detail": "INSUFFICIENT_BALANCE: Insufficient balance. Your available USDT balance is 0.",
+        "evidence": {
+          "code": 20002002,
+          "name": "INSUFFICIENT_BALANCE",
+          "message": "Insufficient balance. Your available USDT balance is 0."
+        }
+      },
+      {
+        "id": "simulate",
+        "level": "UNTESTED",
+        "title": "Liquidity add not simulated",
+        "detail": "The pairing probe did not return a simulation, so no contract was revealed.",
+        "evidence": null
+      },
+      {
+        "id": "identity",
+        "level": "PASS",
+        "title": "Pool contents confirmed on-chain",
+        "detail": "The pool at 0xb2c92bd2666c8921495af2436adb2512687b8c06 holds USDT and BEN, which is the pair the listing advertises.",
+        "evidence": {
+          "token0": {
+            "address": "0x55d398326f99059ff775485246999027b3197955",
+            "isContract": true,
+            "symbol": "USDT",
+            "name": "Tether USD"
+          },
+          "token1": {
+            "address": "0x7bc70ae0f2a67d2fdc0180a697a611f21c857777",
+            "isContract": true,
+            "symbol": "BEN",
+            "name": "BEN"
+          }
+        }
+      },
+      {
+        "id": "exit",
+        "level": "PASS",
+        "title": "Exit path exists",
+        "detail": "Exit reached the position check (no position held yet), so the withdraw path is wired up.",
+        "evidence": {
+          "code": 60003001,
+          "name": "INVESTMENT_NO_POSITION",
+          "message": "You don't have any position in this investment product."
+        }
+      },
+      {
+        "id": "history",
+        "level": "WARN",
+        "title": "No independent record of this pool",
+        "detail": "No third-party record exists for Uniswap V3 USDT-BEN, so today's 13660.88% cannot be compared against any history.",
         "evidence": null
       },
       {

@@ -84,6 +84,31 @@ async function callString(address, selector) {
   }
 }
 
+/**
+ * Read the two sides of a pool straight from the pool contract.
+ *
+ * A Uniswap-style pool implements no name() or symbol(), but it does say which
+ * two tokens it holds. Since the listing publishes poolAddress for every
+ * liquidity pool, this verifies the advertised pair without holding either
+ * asset and without asking Binance to confirm its own claim.
+ */
+export async function poolPair(address) {
+  const addrOf = (hex) =>
+    typeof hex === "string" && hex.length >= 66 ? `0x${hex.slice(-40)}` : null;
+  try {
+    const [a0, a1] = await Promise.all([
+      rpc("eth_call", [{ to: address, data: "0x0dfe1681" }, "latest"]).catch(() => null),
+      rpc("eth_call", [{ to: address, data: "0xd21220a7" }, "latest"]).catch(() => null),
+    ]);
+    const [t0, t1] = [addrOf(a0), addrOf(a1)];
+    if (!t0 || !t1) return null;
+    const [i0, i1] = await Promise.all([identify(t0), identify(t1)]);
+    return { token0: i0, token1: i1 };
+  } catch {
+    return null;
+  }
+}
+
 /** Ask the chain what this contract calls itself. */
 export async function identify(address) {
   const [code, symbol, name] = await Promise.all([

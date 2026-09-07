@@ -6,7 +6,7 @@
 
 import { readFileSync, existsSync } from "node:fs";
 import { listInvestments, walletStatus, baw } from "./baw.js";
-import { preflight, PASS, WARN, BLOCK, UNTESTED } from "./checks.js";
+import { preflight, screen, PASS, WARN, BLOCK, UNTESTED } from "./checks.js";
 
 // ---------------------------------------------------------------- config
 
@@ -67,10 +67,11 @@ const BACK = [{ text: "◀️ Back", callback_data: "home" }];
 
 const HOME_KEYS = {
   inline_keyboard: [
+    [{ text: "✅ Pools that check out", callback_data: "ok:LiquidityPool" },
+     { text: "✅ Lending that checks out", callback_data: "ok:Earn" }],
     [{ text: "🎯 Show me the trap", callback_data: "compare" }],
-    [{ text: "🏦 Lending products", callback_data: "list:Earn" },
-     { text: "💧 Liquidity pools", callback_data: "list:LiquidityPool" }],
-    [{ text: "❓ How this works", callback_data: "help" }],
+    [{ text: "📋 Everything Binance lists", callback_data: "list:LiquidityPool" },
+     { text: "❓ How this works", callback_data: "help" }],
   ],
 };
 
@@ -95,7 +96,7 @@ async function homeText() {
     `that\\. The listing never says which contract you are actually entering\\.\n\n` +
     `I find that contract before anything is signed, ask the chain what it really is, and stop ` +
     `when the answer does not match\\.\n\n` +
-    `👇 New here? Start with *Show me the trap*\\.`;
+    `👇 New here? Start with *Show me the trap*, then look at what checks out\\.`;
 }
 
 const HELP =
@@ -202,6 +203,47 @@ async function products(type) {
   return cache[type];
 }
 
+/**
+ * Screening results, built in the background so a tap returns instantly.
+ *
+ * Screening needs no balance, so it can cover the whole listing rather than the
+ * handful of products the wallet happens to hold.
+ */
+const screened = { LiquidityPool: new Map(), Earn: new Map() };
+let screening = false;
+
+async function screenAll(type, limit = 24) {
+  const items = await products(type);
+  if (!items) return;
+  for (const inv of items.slice(0, limit)) {
+    if (screened[type].has(inv.investmentId)) continue;
+    try {
+      screened[type].set(inv.investmentId, await screen({ investment: inv, chainId: "56" }));
+    } catch { /* leave it out rather than record a guess */ }
+  }
+}
+
+async function backgroundScreen() {
+  if (screening) return;
+  screening = true;
+  try {
+    await screenAll("LiquidityPool");
+    await screenAll("Earn");
+    const v = [...screened.LiquidityPool.values(), ...screened.Earn.values()]
+      .filter((s) => s.verdict === "VERIFIED").length;
+    console.log(`  screened ${screened.LiquidityPool.size + screened.Earn.size} products, ` +
+                `${v} verified`);
+  } finally {
+    screening = false;
+  }
+}
+
+/** Products whose identity the chain confirms, best rate first. */
+function verified(type) {
+  const items = cache[type] ?? [];
+  return items.filter((i) => screened[type].get(i.investmentId)?.verdict === "VERIFIED");
+}
+
 function bestMatch(items, query) {
   const q = query.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(Boolean);
   if (!q.length) return null;
@@ -226,6 +268,36 @@ async function showList(chat, type) {
   const items = await products(type);
   if (!items) return send(chat, "Could not reach the Binance listing right now\\.", HOME_KEYS);
   return send(chat, listIntro(type), productKeys(items, type));
+}
+
+/** The useful half: what survived screening. */
+async function showVerified(chat, type) {
+  await typing(chat);
+  await products(type);
+  if (!screened[type].size) {
+    backgroundScreen();
+    return send(chat,
+      `I am still working through the listing\\. Give me a minute and try again\\.`, HOME_KEYS);
+  }
+  const ok = verified(type);
+  const total = screened[type].size;
+  const noun = type === "LiquidityPool" ? "pools" : "lending products";
+
+  if (!ok.length) {
+    return send(chat,
+      `I checked ${total} ${noun} against the chain and *none of them came back clean*\\.\n\n` +
+      `That is the finding, not a failure to produce a list\\.`, HOME_KEYS);
+  }
+  const head =
+    `*${ok.length} of ${total} ${noun} check out*\n\n` +
+    `For each of these the chain confirms the contract really holds what the listing says, the ` +
+    `product still accepts deposits, and the rate is in line with its own history\\.\n\n` +
+    (type === "LiquidityPool"
+      ? `Still an APR, so still a fee rate rather than a yield, and impermanent loss is your ` +
+        `problem\\.\n\n`
+      : ``) +
+    `Tap one for the full check before you actually put money in\\.`;
+  return send(chat, head, productKeys(ok, type));
 }
 
 /** One product, with progress so the wait is legible. */
@@ -286,6 +358,7 @@ async function onCallback(q) {
   if (d === "help") return send(chat, HELP, { inline_keyboard: [BACK] });
   if (d === "compare") return runCompare(chat);
   if (d.startsWith("list:")) return showList(chat, d.slice(5));
+  if (d.startsWith("ok:")) return showVerified(chat, d.slice(3));
   if (d.startsWith("chk:")) {
     const [, tag, idPrefix] = d.split(":");
     const type = tag === "L" ? "LiquidityPool" : "Earn";
@@ -360,3 +433,5 @@ console.log(`  wallet: ${w.ok ? w.data.status : "unreachable"}`);
 console.log(`  model: ${LLM.key ? LLM.model : "none (matching only)"}`);
 console.log(`  allowed: ${ALLOWED.join(", ") || "nobody yet"}\n`);
 poll();
+backgroundScreen();
+setInterval(backgroundScreen, 10 * 60_000);
