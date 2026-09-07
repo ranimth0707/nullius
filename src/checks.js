@@ -346,21 +346,23 @@ export async function preflight({ investment, tokenAddress, amount, chainId = "5
   }
   checks.push(sim);
 
+  // The exit probe and the rate history do not depend on the simulation, so they
+  // run alongside the identity lookup rather than queueing behind it. On a chat
+  // front end that is the difference between a wait and an abandonment.
   const target = sim.evidence?.feeAndContract?.interactWith?.address;
-  if (sim.level === PASS && target) {
-    checks.push(await checkIdentity(target, investment));
-    checks.push(checkValue(sim.evidence));
-  } else {
-    checks.push(result("identity", sim.level === UNTESTED ? UNTESTED : BLOCK,
-      "Contract never revealed",
-      "Without a simulation there is no contract address to put to the chain, so the " +
-      "product's identity is unverified either way."));
-  }
-
-  checks.push(await checkExit(investmentId, token, chainId));
-
-  const hist = await checkHistory(investment);
-  checks.push(hist);
+  const [identity, exit, hist] = await Promise.all([
+    sim.level === PASS && target
+      ? checkIdentity(target, investment)
+      : Promise.resolve(result("identity", sim.level === UNTESTED ? UNTESTED : BLOCK,
+          "Contract never revealed",
+          "Without a simulation there is no contract address to put to the chain, so the " +
+          "product's identity is unverified either way.")),
+    checkExit(investmentId, token, chainId),
+    checkHistory(investment),
+  ]);
+  checks.push(identity);
+  if (sim.level === PASS && target) checks.push(checkValue(sim.evidence));
+  checks.push(exit, hist);
 
   const depositUsd = sim.level === PASS
     ? Math.abs((sim.evidence.balanceChange ?? [])
