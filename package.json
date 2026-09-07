@@ -11,7 +11,8 @@
     "scan": "node src/cli.js scan",
     "check": "node src/cli.js check",
     "test": "node --test test/*.test.js",
-    "ui": "node src/serve.js"
+    "ui": "node src/serve.js",
+    "bot": "node src/bot.js"
   },
   "keywords": [
     "binance",
