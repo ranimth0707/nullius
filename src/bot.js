@@ -10,7 +10,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import { listInvestments, walletStatus, baw } from "./baw.js";
 import { preflight, PASS, WARN, BLOCK, UNTESTED } from "./checks.js";
-import { stage, peek, commit } from "./execute.js";
+import { stage, peek, commit, observedDelay } from "./execute.js";
 import { positions, formatEarned } from "./positions.js";
 import { classify } from "./refusal.js";
 
@@ -76,6 +76,7 @@ const BACK = [{ text: "◀️ Back", callback_data: "home" }];
 const HOME_KEYS = {
   inline_keyboard: [
     [{ text: "💰 Put my money to work", callback_data: "work" }],
+    [{ text: "👛 My balance", callback_data: "bal" }],
     [{ text: "📊 What I'm holding", callback_data: "pos" }],
     [{ text: "❓ How this works", callback_data: "help" }],
   ],
@@ -359,6 +360,65 @@ async function showHome(chat) {
   return send(chat, await homeText(), HOME_KEYS);
 }
 
+/**
+ * Everything the agent's wallet is and holds, in one place.
+ *
+ * The address matters more here than it would in an ordinary wallet app: this
+ * is an account an agent can spend from, so knowing which one it is, and what
+ * ceiling the wallet puts on a day's spending, is part of knowing what is at
+ * stake. Both come from the wallet itself rather than from anything kept here.
+ */
+async function showBalance(chat) {
+  await typing(chat);
+  const [addr, bal, quota, pos] = await Promise.all([
+    baw(["wallet", "address"]),
+    baw(["wallet", "balance", "--binanceChainId", "56"]),
+    baw(["wallet", "left-quota"]).catch(() => ({ ok: false })),
+    positions("56").catch(() => ({ ok: false })),
+  ]);
+
+  const bsc = (addr.ok ? addr.data?.addresses ?? [] : [])
+    .find((a) => String(a.binanceChainId) === "56");
+
+  const tokens = bal.ok && Array.isArray(bal.data) ? bal.data : [];
+  const liquid = tokens.reduce((s, t) => s + Number(t.value ?? 0), 0);
+  const deployed = pos.ok ? Number(pos.totalUsd ?? 0) : 0;
+
+  const wallet = tokens.length
+    ? tokens
+        .sort((a, b) => Number(b.value ?? 0) - Number(a.value ?? 0))
+        .map((t) => `${esc(String(trim(Number(t.balance))))} ${esc(t.symbol)} · ` +
+                    `$${esc(Number(t.value ?? 0).toFixed(2))}`)
+        .join("\n")
+    : "_Nothing on BNB Smart Chain\\._";
+
+  const working = pos.ok && pos.held.length
+    ? pos.held
+        .map((h) => `${esc(h.protocol)} ${esc(h.asset)} · $${esc(h.valueUsd.toFixed(2))}`)
+        .join("\n")
+    : "_Nothing deposited right now\\._";
+
+  const cap = quota.ok && quota.data
+    ? `\n\n*Daily spending cap*\n$${esc(Number(quota.data.quotaLeft ?? 0).toLocaleString("en-US"))} ` +
+      `left of $${esc(Number(quota.data.dailyLimit ?? 0).toLocaleString("en-US"))}\\. ` +
+      `The wallet enforces this, not me\\.`
+    : "";
+
+  return send(chat,
+    `*My balance*\n\n` +
+    `*Total* · $${esc((liquid + deployed).toFixed(2))}\n` +
+    `_$${esc(liquid.toFixed(2))} in the wallet, $${esc(deployed.toFixed(2))} earning\\._\n\n` +
+    `*In the wallet*\n${wallet}\n\n` +
+    `*Put to work*\n${working}${cap}\n\n` +
+    `*Agent wallet address* \\(BNB Smart Chain\\)\n` +
+    (bsc ? `\`${esc(bsc.address)}\`` : "_Could not read the address right now\\._") + `\n\n` +
+    `_This is the account I deposit from\\. Send funds here to give me more to work with\\._`,
+    { inline_keyboard: [
+      [{ text: "💰 Put my money to work", callback_data: "work" }],
+      BACK,
+    ] });
+}
+
 async function showList(chat, type) {
   await typing(chat);
   const items = await products(type);
@@ -379,7 +439,8 @@ async function runCheck(chat, target, type) {
   // have something real to weigh. A fixed token amount made both round to zero.
   const bal = await spendable(target.investmentName);
   const amount = bal && bal.usable > 0 ? trim(bal.usable * 0.25) : 0.005;
-  const v = await preflight({ investment: target, amount, chainId: "56" });
+  const v = await preflight({ investment: target, amount, chainId: "56",
+    observedDelay: observedDelay(target.investmentId) });
 
   const text = renderVerdict(label, v);
   const keys = { inline_keyboard: [
@@ -430,7 +491,8 @@ async function putToWork(chat, userId) {
   // you were handed one answer with no way to see the others or why they lost.
   // Run them together, since each is mostly waiting on the network.
   const checked = await Promise.all(candidates.map(async ({ inv, test }) => ({
-    inv, v: await preflight({ investment: inv, amount: test, chainId: "56" }),
+    inv, v: await preflight({ investment: inv, amount: test, chainId: "56",
+      observedDelay: observedDelay(inv.investmentId) }),
   })));
 
   const cleared = checked.filter((c) => c.v.verdict === "GO");
@@ -495,7 +557,8 @@ async function showPick(chat, nonce, userId) {
   // Check at the size actually on offer, not at a token amount. A check run on
   // 0.005 of anything tells you almost nothing about depositing a quarter of
   // the wallet.
-  const v = await preflight({ investment: inv, amount: trim(bal.usable * 0.25), chainId: "56" });
+  const v = await preflight({ investment: inv, amount: trim(bal.usable * 0.25), chainId: "56",
+    observedDelay: observedDelay(inv.investmentId) });
 
   // A product can carry a minimum the listing never mentions. If the simulation
   // disclosed one, the proportions that fall under it are not offered.
@@ -738,6 +801,7 @@ async function onCallback(q) {
   if (d === "compare") return runCompare(chat);
   if (d === "work") return putToWork(chat, userId);
   if (d === "pos") return showPositions(chat, userId);
+  if (d === "bal") return showBalance(chat);
   if (d.startsWith("pick:")) return showPick(chat, d.slice(5), userId);
   if (d.startsWith("amt:")) return askAmount(chat, d.slice(4), userId);
   if (d.startsWith("rep:")) {
@@ -783,6 +847,8 @@ async function handle(msg) {
   if (/^\/work\b/.test(text) || /\b(deposit|invest|put .*(money|bnb).*work)\b/i.test(text))
     return putToWork(chat, msg.from?.id);
   if (/^\/earn\b/.test(text)) return showList(chat, "Earn");
+  if (/^\/balance\b/.test(text) || /\b(balance|wallet|address|portfolio)\b/i.test(text))
+    return showBalance(chat);
 
   // Plain language. The model picks what to look at; it decides nothing else.
   await typing(chat);

@@ -32,6 +32,26 @@ export function ledger() {
   }
 }
 
+/**
+ * The redemption delay actually observed for a product, or null.
+ *
+ * Binance documents Lista and Aster as protocols that can hold redemptions, and
+ * treating that as true of every product under them turned out to be wrong: a
+ * Lista USDT redeem came back `[]`, meaning instant. The delay is a property of
+ * the product and it is only reported on the redemption itself, so the one
+ * reliable source is having done it. Once that has happened the answer stops
+ * being a guess.
+ */
+export function observedDelay(investmentId) {
+  for (const e of [...ledger()].reverse()) {
+    if (e.action === "redeem" && e.investmentId === investmentId &&
+        Array.isArray(e.redeemDelayDays)) {
+      return { days: e.redeemDelayDays, at: e.at };
+    }
+  }
+  return null;
+}
+
 function record(entry) {
   const all = ledger();
   all.push(entry);

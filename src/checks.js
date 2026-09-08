@@ -182,7 +182,7 @@ export async function checkProtocolScore(investment, info) {
  */
 const DELAYED_EXIT = new Set(["helio", "astherus"]);
 
-export function checkExitDelay(investment, info) {
+export function checkExitDelay(investment, info, observed = null) {
   const id = info?.defiProtocolId ?? investment?.defiProtocolId ?? null;
   const name = info?.protocolName ?? investment?.protocolName ?? "This protocol";
   if (!id) {
@@ -190,18 +190,47 @@ export function checkExitDelay(investment, info) {
       "The product did not report which protocol it belongs to, so the withdrawal delay " +
       "could not be looked up.");
   }
+
+  // Having withdrawn from this product before beats anything that can be
+  // inferred about the protocol it belongs to.
+  if (observed) {
+    const days = observed.days.filter(Boolean);
+    const when = String(observed.at).slice(0, 10);
+    if (!days.length) {
+      return result("exitdelay", PASS, "Withdrawal is immediate",
+        `A withdrawal from this product on ${when} reported no waiting period, so the funds ` +
+        `land as soon as the transaction confirms.`, { observed: observed.days });
+    }
+    const span = days[0] === days[days.length - 1] ? `${days[0]} days` : `${days[0]} to ${days[days.length - 1]} days`;
+    return result("exitdelay", WARN, `Withdrawal takes ${span}`,
+      `A withdrawal from this product on ${when} reported a waiting period of ${span}. The ` +
+      `redemption is submitted first and the money is claimed after the wait.`,
+      { observed: observed.days },
+      risk(`Your money takes ${span} to come back, not minutes.`,
+        `Withdrawing is two steps. If the market turns, or you simply need the cash, you are ` +
+        `committed for ${span} from the moment you ask to leave.`));
+  }
+
   if (DELAYED_EXIT.has(id)) {
-    return result("exitdelay", WARN, "Withdrawal is not immediate",
-      `${name} holds redemptions for a waiting period before the funds can be claimed. ` +
-      `Withdrawing is two steps, not one: the redemption is submitted, and the money is ` +
-      `claimed after the wait. The exact number of days comes back on the redemption itself. ` +
-      `Nothing in the listing indicates this.`, { defiProtocolId: id },
-      risk("You cannot take your money out on the day you decide to.",
-        "If the market turns, or you simply need the cash, you cannot leave on the day you " +
-        "decide to. You are committed for the length of that wait."));
+    // Deliberately weaker than it used to be. Binance names this protocol as one
+    // that can queue redemptions, and the old wording turned that into a claim
+    // that this product does. A Lista USDT withdrawal came back instant, so the
+    // claim was simply wrong, and warning on every product under a protocol is
+    // the fastest way to teach someone to ignore the warnings.
+    return result("exitdelay", WARN, "Withdrawal might be queued",
+      `Binance names ${name} among the protocols that can hold a redemption before the funds ` +
+      `are claimable. Whether this particular product does is not published anywhere, and it ` +
+      `is only reported on the withdrawal itself, which cannot be simulated without already ` +
+      `holding a position. Some products under ${name} pay out instantly.`,
+      { defiProtocolId: id, certain: false },
+      risk("Might not pay out the same day, and there is no way to know until you withdraw.",
+        `${name} is named by Binance as a protocol that can queue redemptions, but the delay ` +
+        `belongs to the product rather than the protocol and is only reported when you ` +
+        `actually withdraw. I will show you the number the moment it comes back, and ` +
+        `remember it for next time.`));
   }
   return result("exitdelay", PASS, "Withdrawal is immediate",
-    `${name} credits redeemed funds as soon as the transaction confirms — no waiting period.`,
+    `${name} credits redeemed funds as soon as the transaction confirms, with no waiting period.`,
     { defiProtocolId: id });
 }
 
@@ -567,12 +596,12 @@ export const NATIVE_BNB = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
  *
  * Screening answers the first question only, and says so.
  */
-export async function screen({ investment, chainId = "56" }) {
+export async function screen({ investment, chainId = "56", observedDelay = null }) {
   const checks = [];
   const listing = await checkListing(investment.investmentId);
   checks.push(listing);
   checks.push(checkRateType(investment, listing.evidence));
-  checks.push(checkExitDelay(investment, listing.evidence));
+  checks.push(checkExitDelay(investment, listing.evidence, observedDelay));
 
   const pool = listing.evidence?.poolAddress ?? null;
   const [identity, mut, hist] = await Promise.all([
@@ -602,7 +631,8 @@ export async function screen({ investment, chainId = "56" }) {
 }
 
 /** Run every check. Returns { verdict, checks } with verdict GO or NO-GO. */
-export async function preflight({ investment, tokenAddress, amount, chainId = "56" }) {
+export async function preflight({ investment, tokenAddress, amount, chainId = "56",
+                                  observedDelay = null }) {
   const checks = [];
   const investmentId = investment.investmentId;
 
@@ -622,7 +652,7 @@ export async function preflight({ investment, tokenAddress, amount, chainId = "5
 
   const isLp = (investment.investType ?? listing.evidence?.investType) === "LiquidityPool";
   checks.push(checkRateType(investment, listing.evidence));
-  checks.push(checkExitDelay(investment, listing.evidence));
+  checks.push(checkExitDelay(investment, listing.evidence, observedDelay));
 
   // A liquidity add is a different transaction from a deposit — `preview --action
   // deposit` is not valid for a pool — so LP products are simulated through
