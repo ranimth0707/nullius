@@ -26,9 +26,16 @@ export const UNTESTED = "UNTESTED";
  * was observed, which turns out not to be the same thing as explaining what it
  * means. A report can be entirely accurate and still leave someone unable to
  * answer the only question they came with.
+ *
+ * It comes in two lengths because a report nobody finishes reading protects
+ * nobody. `brief` is one line and is what gets shown; `full` is there for
+ * anyone who asks for it.
  */
 const result = (id, level, title, detail, evidence = null, consequence = null) =>
   ({ id, level, title, detail, evidence, consequence });
+
+/** Pair a one-line consequence with the long form behind it. */
+const risk = (brief, full) => ({ brief, full });
 
 const alnum = (s) => String(s ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
 
@@ -134,7 +141,10 @@ export async function checkProtocolScore(investment, info) {
     return result("score", WARN, "Binance publishes no security score for this protocol",
       `${name} is listed and investable, but carries no security score — while the other ` +
       `protocols in the same list do. Nothing here says it is unsafe; it says the venue has ` +
-      `not published a judgement, and the listing looks identical either way.`, r.data);
+      `not published a judgement, and the listing looks identical either way.`, r.data,
+      risk("Binance has not published a security judgement on this protocol.",
+        "Every other protocol in the same list carries a score. This one does not, and the " +
+        "listing looks identical either way. That is an absence of judgement, not a bad one."));
   }
   const dims = r.data?.dimensionScores ?? {};
   const weakest = Object.entries(dims)
@@ -148,7 +158,10 @@ export async function checkProtocolScore(investment, info) {
   if (Number(score) < 70) {
     return result("score", WARN, `Binance scores this protocol ${Number(score).toFixed(2)}`,
       `${name} sits below 70 on Binance's own security score` +
-      (readable ? `, weakest on ${readable}` : "") + `.`, r.data);
+      (readable ? `, weakest on ${readable}` : "") + `.`, r.data,
+      risk(`Binance's own score for this protocol is below the bar the others clear.`,
+        `${name} scores ${Number(score).toFixed(2)} where the rest of the list sits in the 80s ` +
+        `and 90s` + (readable ? `, and its weakest dimension is ${readable}` : "") + `.`));
   }
   return result("score", PASS, `Binance scores this protocol ${Number(score).toFixed(2)}`,
     `${name} is scored ${Number(score).toFixed(2)} by the venue listing it` +
@@ -183,8 +196,9 @@ export function checkExitDelay(investment, info) {
       `Withdrawing is two steps, not one: the redemption is submitted, and the money is ` +
       `claimed after the wait. The exact number of days comes back on the redemption itself. ` +
       `Nothing in the listing indicates this.`, { defiProtocolId: id },
-      "If the market turns, or you simply need the cash, you cannot leave on the day you " +
-      "decide to. You are committed for the length of that wait.");
+      risk("You cannot take your money out on the day you decide to.",
+        "If the market turns, or you simply need the cash, you cannot leave on the day you " +
+        "decide to. You are committed for the length of that wait."));
   }
   return result("exitdelay", PASS, "Withdrawal is immediate",
     `${name} credits redeemed funds as soon as the transaction confirms — no waiting period.`,
@@ -261,12 +275,13 @@ export async function checkIdentity(target, claim) {
       `pattern of a curated vault, where the listing names the lending protocol and the contract ` +
       `names the curator who actually sets the risk policy. Your money answers to the second one, ` +
       `and the listing never mentions them.`, onchain,
-      `Your deposit does not sit still. It is lent out, and someone decides what it may be lent ` +
-      `against, at what ratio, and priced by which oracle. Here that someone is the curator, not ` +
-      `${claim.protocolName}. If those limits are set loosely and borrowers default while their ` +
-      `collateral is falling, the vault takes the loss and your deposit does not come back whole. ` +
-      `Any score or reputation you are relying on belongs to ${claim.protocolName}, and does not ` +
-      `cover the curator's decisions.`);
+      risk(`${seen.split(" (")[0].replace(/"/g, "")} decides what your money is lent against, not ${claim.protocolName}.`,
+        `Your deposit does not sit still. It is lent out, and someone decides what it may be lent ` +
+        `against, at what ratio, and priced by which oracle. Here that someone is the curator, not ` +
+        `${claim.protocolName}. If those limits are set loosely and borrowers default while their ` +
+        `collateral is falling, the vault takes the loss and your deposit does not come back whole. ` +
+        `Any score or reputation you are relying on belongs to ${claim.protocolName}, and does not ` +
+        `cover the curator's decisions.`));
   }
   if (!assetOk) {
     return result("identity", WARN, "Asset naming differs on-chain",
@@ -323,17 +338,19 @@ export async function checkMutability(target) {
       `${target} is a proxy. Upgrade authority ends at a timelock with a ` +
       `${end.minDelaySeconds}s delay, so a change is visible before it takes effect.${trail}`,
       { ...m, chain },
-      "The code holding your money can still be replaced, but not without warning. The delay is " +
-      "the window in which you could get out first, and it only helps if someone is watching.");
+      risk("The code can still be replaced, but you get warning first.",
+        "The code holding your money can still be replaced, but not without warning. The delay is " +
+        "the window in which you could get out first, and it only helps if someone is watching."));
   }
   return result("mutability", WARN, "Code can be replaced",
     `${target} forwards to ${m.implementation ?? "a beacon-supplied implementation"}, and that ` +
     `target can be changed. What was confirmed above is what runs today, not necessarily what ` +
     `runs when the money comes back out.${trail}`, { ...m, chain },
-    "Whoever holds that key can swap the code holding your money, without asking and without " +
-    "warning, including for code that moves it somewhere else. Nothing here says they will. " +
-    "It says your deposit is protected by trust in that keyholder rather than by the code " +
-    "just verified, and that this is the mechanism behind several of the largest losses in DeFi.");
+    risk("One keyholder can swap the code holding your money, without warning.",
+      "Whoever holds that key can swap the code holding your money, without asking and without " +
+      "warning, including for code that moves it somewhere else. Nothing here says they will. " +
+      "It says your deposit is protected by trust in that keyholder rather than by the code " +
+      "just verified, and that this is the mechanism behind several of the largest losses in DeFi."));
 }
 
 /** 5. Does the simulated swap of value conserve value? */
@@ -399,7 +416,10 @@ export async function checkHistory(investment) {
   if (m.status === "no_record") {
     return result("history", WARN, "No independent record of this pool",
       `No third-party record exists for ${investment.protocolName} ${investment.investmentName}, ` +
-      `so today's ${apy.toFixed(2)}% cannot be compared against any history.`);
+      `so today's ${apy.toFixed(2)}% cannot be compared against any history.`, null,
+      risk("Nothing outside Binance confirms this rate is normal.",
+        "No independent source tracks this product, so there is no way to tell whether today's " +
+        "rate is its usual one or a number that will not last."));
   }
   if (m.status === "ambiguous") {
     const closest = apy - m.err;
@@ -410,12 +430,19 @@ export async function checkHistory(investment) {
       `asset, and none advertises a matching rate. The nearest is ${closest.toFixed(2)}% against ` +
       `the listed ${apy.toFixed(2)}% (${m.err.toFixed(2)}pp apart). Which pool a deposit would ` +
       `enter cannot be established, so its history cannot be read.`,
-      { recognised: true, candidates: m.candidates });
+      { recognised: true, candidates: m.candidates },
+      risk("Which pool your money enters cannot be pinned down, so its history cannot be read.",
+        "The protocol and asset are recognised independently, but several pools carry them and " +
+        "none advertises a matching rate. Without knowing which one this is, there is no record " +
+        "to check today's rate against."));
   }
   const h = await apyHistory(m.pool.pool, apy);
   if (!h) {
     return result("history", WARN, "Not enough history",
-      `Matched ${m.pool.project}, but its record is too short to judge today's rate.`);
+      `Matched ${m.pool.project}, but its record is too short to judge today's rate.`, null,
+      risk("Too new to tell whether this rate holds.",
+        "The pool was identified, but it has not existed long enough for its rate history to " +
+        "say anything about whether today's number is sustainable."));
   }
   const ev = { ...h, project: m.pool.project, poolId: m.pool.pool, tvlUsd: m.pool.tvlUsd };
   if (h.ratioToMedian !== null && h.ratioToMedian >= 3 && h.percentile >= 0.95) {
@@ -423,7 +450,11 @@ export async function checkHistory(investment) {
       `Today's ${apy.toFixed(2)}% is ${h.ratioToMedian.toFixed(1)}× the pool's median ` +
       `(${h.median.toFixed(2)}%) across ${h.samples} days since ${h.from}, and higher than ` +
       `${(h.percentile * 100).toFixed(0)}% of its record. Rates this far above a pool's own ` +
-      `baseline are usually temporary incentives or a market under stress.`, ev);
+      `baseline are usually temporary incentives or a market under stress.`, ev,
+      risk("This rate is far above its own normal and is unlikely to last.",
+        "Rates this far above a pool's own baseline are usually a temporary incentive or a " +
+        "market under stress. Depositing on the strength of the headline number means expecting " +
+        "something the pool has almost never paid."));
   }
   return result("history", PASS, "Rate is normal for this pool",
     `${apy.toFixed(2)}% sits at the ${ordinal(Math.round(h.percentile * 100))} percentile of ` +
@@ -493,14 +524,21 @@ export function checkRateType(investment, info) {
   return result("ratetype", WARN, "Rate is a fee rate, not a yield",
     `Reported as ${type ?? "APR"} at ${rate.toLocaleString("en-US")}%. On a concentrated-liquidity ` +
     `position that is an annualised trading-fee rate — not a return received, and blind to ` +
-    `impermanent loss. It cannot be compared against the APY figures on lending products.`);
+    `impermanent loss. It cannot be compared against the APY figures on lending products.`, null,
+    risk("This number is a trading fee rate, not money you receive.",
+      "On a concentrated-liquidity position the advertised figure annualises trading fees. It " +
+      "is not a return anyone is paid, and it takes no account of impermanent loss, so it " +
+      "cannot be compared against the APY on a lending product."));
 }
 
 /** 7. Is the pool big enough to absorb this deposit? */
 export function checkCapacity(depositUsd, poolTvlUsd) {
   if (!poolTvlUsd || poolTvlUsd <= 0 || !depositUsd) {
     return result("capacity", WARN, "Pool size unknown",
-      "Could not establish independent pool size, so deposit impact is unknown.");
+      "Could not establish independent pool size, so deposit impact is unknown.", null,
+      risk("Unknown whether your deposit is large enough to move the rate it was chosen for.",
+        "Pool size could not be established independently, so there is no way to tell whether " +
+        "this deposit is small enough to leave the advertised rate intact."));
   }
   const share = depositUsd / poolTvlUsd;
   const pct = (share * 100).toFixed(2);

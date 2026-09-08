@@ -7,6 +7,7 @@
 // to spend: the call is not reachable from anything it touches.
 
 import { readFileSync, existsSync } from "node:fs";
+import { randomBytes } from "node:crypto";
 import { listInvestments, walletStatus, baw } from "./baw.js";
 import { preflight, PASS, WARN, BLOCK, UNTESTED } from "./checks.js";
 import { stage, peek, commit } from "./execute.js";
@@ -130,6 +131,23 @@ const trim = (n) => Number(Math.floor(n * 1e6) / 1e6);
 const awaitingAmount = new Map();
 const AMOUNT_TTL_MS = 5 * 60_000;
 
+/**
+ * Long reports, kept so the button that shows one does not have to run every
+ * check again. Short by default is only an improvement if the detail is still
+ * one tap away.
+ */
+const reports = new Map();
+const REPORT_TTL_MS = 15 * 60_000;
+
+function keepReport(label, v) {
+  const id = randomBytes(6).toString("base64url");
+  reports.set(id, { text: renderVerdict(label, v, { full: true }), at: Date.now() });
+  for (const [k, r] of reports) if (Date.now() - r.at > REPORT_TTL_MS) reports.delete(k);
+  return id;
+}
+
+const FULL = (id) => [{ text: "📄 Show me everything", callback_data: `rep:${id}` }];
+
 // ---------------------------------------------------------------- screens
 
 /** Home. Wallet state first, then one line of what to do. */
@@ -194,52 +212,81 @@ function productKeys(items, type) {
   return { inline_keyboard: rows };
 }
 
-function renderVerdict(label, v) {
-  const gaps = v.checks.filter((c) => c.level === UNTESTED).length;
-  const head = v.verdict === "GO" || v.verdict === "VERIFIED"
+/**
+ * The report, short.
+ *
+ * The long version was accurate and nobody finished it. Eleven blocks of prose
+ * ending in a tick is a wall, and a wall gets scrolled past, which leaves the
+ * warnings inside it doing nothing. What matters is what passed, what did not,
+ * and what the ones that did not would cost. Everything else moves behind a
+ * button for whoever wants it.
+ */
+function renderVerdict(label, v, { full = false } = {}) {
+  if (full) return renderFull(label, v);
+
+  const passed = v.checks.filter((c) => c.level === PASS).length;
+  const flags = v.checks.filter((c) => c.level !== PASS);
+  const cleared = v.verdict === "GO" || v.verdict === "VERIFIED";
+
+  const head = cleared
     ? `✅ *Cleared* · ${esc(label)}`
     : v.reason === "failed"
       ? `⛔️ *Refused* · ${esc(label)}`
-      : `◽️ *Refused* · ${esc(label)}`;
-  const body = v.checks.map((c) => `${MARK[c.level]} *${esc(c.title)}*\n${esc(c.detail)}`).join("\n\n");
-  // The old wording claimed nothing could be checked even when most of it had
-  // been, which contradicted the ticks directly above it.
-  const tail = v.verdict === "GO" || v.verdict === "VERIFIED"
+      : `◽️ *Not confirmed* · ${esc(label)}`;
+
+  if (!flags.length) {
+    return `${head}\n\nAll ${passed} checks passed\\. The contract is what the listing says it ` +
+      `is, the rate is in line with its own history, and nothing about it needs explaining\\.`;
+  }
+
+  // One line each: what it is, then what it costs. Anything without a plain
+  // consequence written for it shows its title alone rather than filler.
+  const lines = flags.map((c) => {
+    const brief = c.consequence?.brief;
+    return `${MARK[c.level]} *${esc(c.title)}*` + (brief ? `\n${esc(brief)}` : "");
+  }).join("\n\n");
+
+  const count = `*${passed} of ${v.checks.length} checks passed\\.* ` +
+    `${flags.length === 1 ? "One thing" : `${flags.length} things`} to know:`;
+
+  const tail = cleared
+    ? `\n\nThe contract is genuine and the numbers hold\\. What is left is trust in people, ` +
+      `not code\\. Your call\\.`
+    : v.reason === "failed"
+      ? `\n\nThat is a refusal, not a warning\\. I would not put money here\\.`
+      : `\n\nNothing failed, but not everything could be checked\\. Not being able to confirm ` +
+        `something is not permission\\.`;
+
+  return `${head}\n\n${count}\n\n${lines}${tail}`;
+}
+
+/** Everything, for whoever asks. */
+function renderFull(label, v) {
+  const gaps = v.checks.filter((c) => c.level === UNTESTED).length;
+  const cleared = v.verdict === "GO" || v.verdict === "VERIFIED";
+  const head = cleared
+    ? `✅ *Cleared* · ${esc(label)}`
+    : v.reason === "failed"
+      ? `⛔️ *Refused* · ${esc(label)}`
+      : `◽️ *Not confirmed* · ${esc(label)}`;
+  const body = v.checks
+    .map((c) => `${MARK[c.level]} *${esc(c.title)}*\n${esc(c.detail)}`)
+    .join("\n\n");
+  const tail = cleared
     ? "\n\nEverything I can check, checks out\\."
     : v.reason === "failed"
       ? "\n\nSomething failed outright\\. I would not put money here\\."
       : `\n\nNothing failed, but ${gaps === 1 ? "one check" : `${gaps} checks`} could not be ` +
         `completed at all\\. Not being able to confirm something is not permission\\.`;
-  return `${head}\n\n${body}${tail}${consequences(v)}`;
-}
 
-/**
- * The part the check list does not answer.
- *
- * Eleven accurate findings and a tick at the bottom still leave someone asking
- * whether it is safe, which is the only question they came with. Listing what
- * was observed is not the same as saying what it would cost them, so the
- * warnings get restated in those terms.
- *
- * This deliberately stops short of a recommendation. What has to go wrong is a
- * fact about the product. Whether that is worth 5.46% is not.
- */
-function consequences(v) {
-  const risks = v.checks.filter((c) => c.consequence && (c.level === WARN || c.level === BLOCK));
-  if (!risks.length) return "";
+  const risks = v.checks.filter((c) => c.consequence?.full && c.level !== PASS);
+  const why = risks.length
+    ? `\n\n\\-\\-\\-\n\n*What each one would cost you*\n\n` +
+      risks.map((c) => `*${esc(c.title)}*\n${esc(c.consequence.full)}`).join("\n\n") +
+      `\n\n_I cannot tell you whether this is a good investment, and I am not qualified to\\._`
+    : "";
 
-  const body = risks
-    .map((c) => `*${esc(c.title)}*\n${esc(c.consequence)}`)
-    .join("\n\n");
-
-  return `\n\n\\-\\-\\-\n\n*So is it safe?*\n\n` +
-    `Everything above is about identity: whether this contract is what the listing says it is\\. ` +
-    `It is\\. What none of it can tell you is whether the people who control it will behave, and ` +
-    `that is where the money is actually at risk\\.\n\n` +
-    `${risks.length === 1 ? "One finding" : `${risks.length} findings`} here ` +
-    `${risks.length === 1 ? "depends" : "depend"} on people rather than code\\.\n\n${body}\n\n` +
-    `_I cannot tell you whether this is a good investment, and I am not qualified to\\. What I can ` +
-    `do is put what would have to go wrong in front of you before you decide, instead of after\\._`;
+  return `${head}\n\n${body}${tail}${why}`;
 }
 
 // ---------------------------------------------------------------- model
@@ -328,11 +375,16 @@ async function runCheck(chat, target, type) {
     `contract it names\\. Nothing gets broadcast\\. This takes a few seconds\\._`);
   const id = m?.result?.message_id;
 
-  const amount = type === "LiquidityPool" ? 0.002 : 0.005;
+  // A quarter of what the wallet could commit, so the value and capacity checks
+  // have something real to weigh. A fixed token amount made both round to zero.
+  const bal = await spendable(target.investmentName);
+  const amount = bal && bal.usable > 0 ? trim(bal.usable * 0.25) : 0.005;
   const v = await preflight({ investment: target, amount, chainId: "56" });
 
   const text = renderVerdict(label, v);
-  const keys = { inline_keyboard: [[{ text: "◀️ Back to list", callback_data: `list:${type}` }], BACK] };
+  const keys = { inline_keyboard: [
+    FULL(keepReport(label, v)),
+    [{ text: "◀️ Back to list", callback_data: `list:${type}` }], BACK] };
   return id ? edit(chat, id, text, keys) : send(chat, text, keys);
 }
 
@@ -463,6 +515,7 @@ async function showPick(chat, nonce, userId) {
     }]);
   }
   rows.push([{ text: "✏️ Enter my own amount", callback_data: `amt:${nonce}` }]);
+  rows.push(FULL(keepReport(i.label, v)));
   rows.push([{ text: "◀️ Back to the list", callback_data: "work" }]);
 
   const shortfall = !offered.length
@@ -687,6 +740,12 @@ async function onCallback(q) {
   if (d === "pos") return showPositions(chat, userId);
   if (d.startsWith("pick:")) return showPick(chat, d.slice(5), userId);
   if (d.startsWith("amt:")) return askAmount(chat, d.slice(4), userId);
+  if (d.startsWith("rep:")) {
+    const r = reports.get(d.slice(4));
+    return send(chat, r && Date.now() - r.at <= REPORT_TTL_MS
+      ? r.text
+      : "That report has expired\\. Run the check again\\.", { inline_keyboard: [BACK] });
+  }
   if (d.startsWith("stage:")) return confirmStage(chat, d.slice(6), userId);
   if (d.startsWith("go:")) return doDeposit(chat, d.slice(3), userId);
   if (d.startsWith("list:")) return showList(chat, d.slice(5));
