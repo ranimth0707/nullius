@@ -262,11 +262,14 @@ export async function checkHistory(investment) {
   }
   if (m.status === "ambiguous") {
     const closest = apy - m.err;
+    // Records the fact that the protocol and asset were found even though the
+    // exact pool was not, because those are different degrees of ignorance.
     return result("history", WARN, "Cannot tell which pool this is",
       `${m.candidates} independent pool${m.candidates === 1 ? "" : "s"} carry this protocol and ` +
-      `asset, and none advertises a matching rate — the nearest is ${closest.toFixed(2)}% against ` +
+      `asset, and none advertises a matching rate. The nearest is ${closest.toFixed(2)}% against ` +
       `the listed ${apy.toFixed(2)}% (${m.err.toFixed(2)}pp apart). Which pool a deposit would ` +
-      `enter cannot be established, so its history cannot be read.`);
+      `enter cannot be established, so its history cannot be read.`,
+      { recognised: true, candidates: m.candidates });
   }
   const h = await apyHistory(m.pool.pool, apy);
   if (!h) {
@@ -493,6 +496,8 @@ export async function preflight({ investment, tokenAddress, amount, chainId = "5
     : null;
   checks.push(checkCapacity(depositUsd, hist.evidence?.tvlUsd));
 
+  corroborate(checks);
+
   const blocked = checks.filter((c) => c.level === BLOCK).length;
   const untested = checks.filter((c) => c.level === UNTESTED).length;
   return {
@@ -505,4 +510,51 @@ export async function preflight({ investment, tokenAddress, amount, chainId = "5
     warned: checks.filter((c) => c.level === WARN).length,
     checks,
   };
+}
+
+/**
+ * Let other evidence stand in when name() is missing.
+ *
+ * name() and symbol() are optional in ERC20 and plenty of serious contracts
+ * skip them. Treating their absence as "unverifiable" refused Lista at 1.50%,
+ * a protocol holding $724m behind a timelock-governed proxy, and handed back
+ * Venus at 0.07% instead. Twenty-one times less yield on the strength of a
+ * missing optional method is not caution, it is a bad rule.
+ *
+ * Identity by name is one route, not the only one. When the chain confirms the
+ * code cannot be swapped by a single key, and an independent source recognises
+ * the same protocol, asset and rate, that is corroboration from two directions
+ * that do not depend on Binance or on each other. It is weaker than reading the
+ * name, so it downgrades to a warning rather than a pass, and the deposit
+ * proceeds with the reason stated.
+ */
+function corroborate(checks) {
+  const at = (id) => checks.find((c) => c.id === id);
+  const identity = at("identity");
+  if (!identity || identity.level !== UNTESTED) return;
+  if (identity.title !== "Contract does not name itself") return;
+
+  const mut = at("mutability");
+  const hist = at("history");
+
+  // Either the code cannot change at all, or changing it takes a timelock rather
+  // than one signature. An unresolved admin is not good enough here: not knowing
+  // who holds the key is the situation this whole check exists to flag.
+  const governed = mut && (mut.level === PASS || mut.title?.includes("not instantly"));
+
+  // Recognised by someone independent. An exact rate match pins the specific
+  // pool, which is ideal, but finding the protocol and asset at all still
+  // establishes that this is a real thing other people track. Only a complete
+  // absence of records counts as unknown.
+  const known = hist && (hist.level === PASS || hist.evidence?.recognised === true);
+
+  if (!governed || !known) return;
+
+  identity.level = WARN;
+  identity.title = "Identity corroborated, not read directly";
+  identity.detail =
+    `${identity.evidence?.address ?? "The contract"} implements no name() or symbol(), which is ` +
+    `permitted and common. Two independent sources agree on what it is instead: the chain shows ` +
+    `its code cannot be replaced by any single key, and third-party records list this protocol, ` +
+    `asset and rate. Weaker than reading the name off the contract, and enough to proceed on.`;
 }

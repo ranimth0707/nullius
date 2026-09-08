@@ -121,6 +121,24 @@ BOTH."* `lp-add` takes a single token and a single amount, but a pool position n
 the wallet will not swap for you. Nothing announces the second requirement in advance. Running the
 simulation is what drags it into the open.
 
+### When the name cannot be read
+
+`name()` and `symbol()` are optional in ERC20 and plenty of serious contracts skip them. Treating
+their absence as unverifiable refused Lista at 1.50%, a protocol holding $731m behind a proxy whose
+upgrade authority ends at a timelock with a 24 hour delay, and handed back Venus at 0.07% instead.
+Twenty-one times less yield because of a missing optional method is not caution, it is a bad rule.
+
+Identity by name is one route to it, not the only one. So when the name cannot be read, two other
+things are asked instead: whether the chain shows the code is either immutable or changeable only
+through a timelock, and whether an independent source recognises this protocol and asset at all.
+Both hold, and it proceeds with a warning saying the identity was corroborated rather than read.
+
+The distinctions matter more than the rule. An unresolved admin does not corroborate, because not
+knowing who holds the key is the exact thing the mutability check exists to flag. A complete
+absence of third-party records does not corroborate either, though finding the protocol without
+pinning the specific pool does. Which is why Lista at 1.50% now clears, Lista's other BNB product
+does not, and Aster does not.
+
 ### Three answers, not two
 
 A product can pass. It can fail. Or it can produce no evidence in either direction, which happens
