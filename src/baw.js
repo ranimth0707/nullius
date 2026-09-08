@@ -62,10 +62,24 @@ export const investmentInfo = (investmentId) =>
  *
  * None of this appears in the investment listing, which is where a rate gets
  * chosen. Binance scores every protocol it lists and then shows the rate on its
- * own — the score is a separate call nobody makes.
+ * own, so the score is a separate call nobody makes.
+ *
+ * Cached, because it is asked per product and answered per protocol. Screening
+ * 48 products means 48 of these calls against 10 distinct protocols, at about a
+ * second each, and the answer does not change between them.
  */
-export const protocolInfo = (defiProtocolId) =>
-  baw(["defi", "protocol-info", "--defiProtocolId", defiProtocolId]);
+const protocolCache = new Map();
+
+export function protocolInfo(defiProtocolId) {
+  if (!protocolCache.has(defiProtocolId)) {
+    const p = baw(["defi", "protocol-info", "--defiProtocolId", defiProtocolId])
+      // A failed lookup must not be remembered as the answer forever.
+      .then((r) => { if (!r.ok) protocolCache.delete(defiProtocolId); return r; })
+      .catch((e) => { protocolCache.delete(defiProtocolId); throw e; });
+    protocolCache.set(defiProtocolId, p);
+  }
+  return protocolCache.get(defiProtocolId);
+}
 
 /** Simulate a deposit. Does NOT broadcast — this is what reveals `interactWith`. */
 export const previewDeposit = (investmentId, tokenAddress, amount, chainId = "56") =>

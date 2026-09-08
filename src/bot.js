@@ -236,6 +236,10 @@ async function screenAll(type, limit = 24) {
     try {
       screened[type].set(inv.investmentId, await screen({ investment: inv, chainId: "56" }));
     } catch { /* leave it out rather than record a guess */ }
+    // Screening the whole listing takes about a minute and a half of back-to-back
+    // subprocess calls. Whoever is tapping buttons right now should not be queued
+    // behind work they did not ask for.
+    await new Promise((r) => setTimeout(r, 40));
   }
 }
 
@@ -664,5 +668,8 @@ console.log(`  wallet: ${w.ok ? w.data.status : "unreachable"}`);
 console.log(`  model: ${LLM.key ? LLM.model : "none (matching only)"}`);
 console.log(`  allowed: ${ALLOWED.join(", ") || "nobody yet"}\n`);
 poll();
-backgroundScreen();
+// Not immediately. A restart is exactly when someone is most likely to be
+// tapping, and the first thing they would hit is a minute and a half of
+// screening they cannot see.
+setTimeout(backgroundScreen, 5_000);
 setInterval(backgroundScreen, 10 * 60_000);
