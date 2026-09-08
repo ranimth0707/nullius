@@ -1,8 +1,10 @@
 // Telegram front end.
 //
-// The bot can read and simulate. It cannot deposit: baw.js enforces a read-only
-// allowlist at the wrapper level and `defi deposit` is not on it. That is not a
-// rule the model is asked to respect, it is a call it cannot make.
+// The model here reads messages and nothing else. Everything it can reach goes
+// through baw.js, which refuses anything outside a read-only allowlist. Moving
+// money lives in execute.js behind a nonce minted only after a check came back
+// clear, and the model never sees one. So it is not that the model is asked not
+// to spend: the call is not reachable from anything it touches.
 
 import { readFileSync, existsSync } from "node:fs";
 import { listInvestments, walletStatus, baw } from "./baw.js";
@@ -73,7 +75,6 @@ const HOME_KEYS = {
   inline_keyboard: [
     [{ text: "💰 Put my money to work", callback_data: "work" }],
     [{ text: "📊 What I'm holding", callback_data: "pos" }],
-    [{ text: "🔍 Check something before I deposit elsewhere", callback_data: "ok:LiquidityPool" }],
     [{ text: "❓ How this works", callback_data: "help" }],
   ],
 };
@@ -116,12 +117,13 @@ const HELP =
   `back what it calls itself\\.\n\n` +
   `*3\\. I compare\\.* Listing says one thing, chain says another, I stop\\. Chain says nothing ` +
   `at all, I also stop\\.\n\n` +
-  `Ten checks run in total, covering delisted products, contracts whose code one key can replace, ` +
-  `up as yields, missing exits, and pool sizes too small to take your money\\.\n\n` +
+  `Ten checks run in total: delisted products, contracts whose code one key can replace, hidden ` +
+  `second assets, fee rates dressed up as yields, missing exits, and pools too small to take ` +
+  `your money without moving the rate\\.\n\n` +
   `*Three answers, not two\\.* Pass, fail, or no evidence either way\\. The third one still ` +
   `refuses\\. Not being able to verify something is not permission to proceed\\.\n\n` +
-  `I run a model so I can read plain English\\. It has no way to spend anything\\. The wrapper I ` +
-  `call through only permits reads and simulations\\.`;
+  `I run a model so I can read plain English, and it cannot spend anything\\. Moving money needs ` +
+  `a token minted only after a check comes back clear, and the model never sees one\\.`;
 
 function listIntro(type) {
   return type === "LiquidityPool"
@@ -353,50 +355,79 @@ async function putToWork(chat, userId) {
   }
 
   const m = await send(chat,
-    `🔍 *Working through ${candidates.length} lending products your wallet can actually enter\\.*\n\n` +
-    `_Checking each one against the chain, best rate first\\. Nothing is broadcast yet\\._`);
+    `🔍 *Checking all ${candidates.length} lending products your wallet can enter\\.*\n\n` +
+    `_Each one goes to the chain\\. Nothing is broadcast\\._`);
   const mid = m?.result?.message_id;
 
-  // Best rate first, and stop at the first one that survives everything.
-  let cleared = null, tried = 0;
-  const rejected = [];
-  for (const inv of candidates) {
-    tried += 1;
-    const v = await preflight({ investment: inv, amount: SIZES[0], chainId: "56" });
-    if (v.verdict === "GO") { cleared = { inv, v }; break; }
-    rejected.push(`${inv.investmentName} · ${inv.protocolName} · ${inv.apyDisplay}`);
-  }
+  // Everything gets checked, not just up to the first pass. Stopping early meant
+  // you were handed one answer with no way to see the others or why they lost.
+  // Run them together, since each is mostly waiting on the network.
+  const checked = await Promise.all(candidates.map(async (inv) => ({
+    inv, v: await preflight({ investment: inv, amount: SIZES[0], chainId: "56" }),
+  })));
 
-  if (!cleared) {
+  const cleared = checked.filter((c) => c.v.verdict === "GO");
+  const refused = checked.filter((c) => c.v.verdict !== "GO");
+
+  const line = ({ inv, v }) => {
+    const why = v.reason === "failed"
+      ? v.checks.find((c) => c.level === BLOCK)?.title ?? "a check failed"
+      : v.checks.find((c) => c.level === UNTESTED)?.title ?? "could not be checked";
+    return `${v.verdict === "GO" ? "✅" : v.reason === "failed" ? "⛔️" : "◽️"} ` +
+      `*${esc(inv.investmentName)}* · ${esc(inv.protocolName)} · ${esc(inv.apyDisplay)}` +
+      (v.verdict === "GO" ? "" : `\n     ${esc(why)}`);
+  };
+
+  const body = [...cleared, ...refused].map(line).join("\n");
+
+  if (!cleared.length) {
     return edit(chat, mid,
-      `⛔️ *Nothing cleared\\.*\n\nI checked ${tried} products your wallet could enter and not one ` +
-      `of them survived\\.\n\n${rejected.map((r) => `• ${esc(r)}`).join("\n")}\n\n` +
+      `*Checked ${checked.length}, none cleared\\.*\n\n${body}\n\n` +
       `That is the answer, not a failure to find you something\\.`, HOME_KEYS);
   }
 
-  const { inv, v } = cleared;
-  const label = `${inv.protocolName} ${inv.investmentName} @ ${inv.apyDisplay}`;
-  const token = v.checks.find((c) => c.id === "listing")?.evidence?.assetTokenList?.[0]?.tokenAddress
-    ?? NATIVE_BNB;
+  // One button per product that survived, so the choice is yours.
+  const keys = cleared.map(({ inv, v }) => {
+    const token = v.checks.find((c) => c.id === "listing")
+      ?.evidence?.assetTokenList?.[0]?.tokenAddress ?? NATIVE_BNB;
+    return [{
+      text: `${inv.investmentName} · ${inv.protocolName} · ${inv.apyDisplay}`,
+      callback_data: `pick:${stage({ investmentId: inv.investmentId, tokenAddress: token,
+        amount: SIZES[0], label: `${inv.protocolName} ${inv.investmentName} @ ${inv.apyDisplay}`,
+        ownerId: userId })}`,
+    }];
+  });
+  keys.push(BACK);
 
-  const skipped = rejected.length
-    ? `\n\nPassed over on the way here: ${esc(rejected.join(", "))}\\.`
-    : "";
+  return edit(chat, mid,
+    `*${cleared.length} of ${checked.length} cleared\\.*\n\n${body}\n\n` +
+    `_Tap one to see its full report and choose an amount\\._`, { inline_keyboard: keys });
+}
 
+/** A cleared product, in full, with sizes. */
+async function showPick(chat, nonce, userId) {
+  const i = peek(nonce);
+  if (!i || String(i.ownerId) !== String(userId)) {
+    return send(chat, "That has expired\\. Run the check again\\.", HOME_KEYS);
+  }
+  await typing(chat);
+  const items = await products("Earn");
+  const inv = items?.find((x) => x.investmentId === i.investmentId);
+  if (!inv) return send(chat, "That product has left the listing\\.", HOME_KEYS);
+
+  const v = await preflight({ investment: inv, amount: SIZES[0], chainId: "56" });
   const keys = {
     inline_keyboard: [
       SIZES.map((s) => ({
         text: `Deposit ${s} ${inv.investmentName}`,
-        callback_data: `stage:${stage({ investmentId: inv.investmentId, tokenAddress: token,
-          amount: s, label, ownerId: userId })}`,
+        callback_data: `stage:${stage({ investmentId: i.investmentId, tokenAddress: i.tokenAddress,
+          amount: s, label: i.label, ownerId: userId })}`,
       })),
-      BACK,
+      [{ text: "◀️ Back to the list", callback_data: "work" }],
     ],
   };
-
-  return edit(chat, mid,
-    `${renderVerdict(label, v)}${skipped}\n\n` +
-    `_Pick a size and I will send it\\. This one actually spends money\\._`, keys);
+  return send(chat, `${renderVerdict(i.label, v)}\n\n` +
+    `_Pick a size\\. This one actually spends money\\._`, keys);
 }
 
 /** What is held, what it cost, what it has made, and the way out. */
@@ -528,6 +559,7 @@ async function onCallback(q) {
   if (d === "compare") return runCompare(chat);
   if (d === "work") return putToWork(chat, userId);
   if (d === "pos") return showPositions(chat, userId);
+  if (d.startsWith("pick:")) return showPick(chat, d.slice(5), userId);
   if (d.startsWith("stage:")) return confirmStage(chat, d.slice(6), userId);
   if (d.startsWith("go:")) return doDeposit(chat, d.slice(3), userId);
   if (d.startsWith("list:")) return showList(chat, d.slice(5));
