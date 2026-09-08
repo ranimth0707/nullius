@@ -128,13 +128,28 @@ export async function checkIdentity(target, claim) {
   const assetOk = wantAsset.length >= 2 && hay.includes(wantAsset);
 
   const seen = `"${onchain.name ?? "?"}" (${onchain.symbol ?? "?"})`;
+
+  // The asset is the part that must match. Being handed a different token than
+  // the one advertised is a straight mismatch and nothing explains it away.
+  if (!assetOk && !protoOk) {
+    return result("identity", BLOCK, "Contract holds a different asset",
+      `The listing advertises ${claim.protocolName} ${claim.investmentName}, but the contract ` +
+      `the deposit would enter calls itself ${seen}, which matches neither.`, onchain);
+  }
+
+  // A different protocol name usually means a curated vault: the listing names
+  // whoever provides the lending infrastructure, while the contract names
+  // whoever actually manages the risk. Four products listed as Lista resolve to
+  // RockawayX, Gauntlet and Pangolins vaults. That is worth knowing and is not
+  // in itself wrong, so it is surfaced rather than refused. Refusing it while
+  // letting through contracts that say nothing at all had it backwards: this one
+  // tells us exactly what we are entering.
   if (!protoOk) {
-    // The contract was readable and named itself something other than the advertised
-    // protocol. Depositing here means landing somewhere other than where the listing
-    // said, which is precisely the case this tool exists to stop.
-    return result("identity", BLOCK, "Contract names a different protocol",
-      `The listing advertises ${claim.protocolName}, but the contract the deposit would enter ` +
-      `calls itself ${seen}. Two different protocol names for one deposit.`, onchain);
+    return result("identity", WARN, "Run by someone other than the listed protocol",
+      `The listing says ${claim.protocolName}. The contract calls itself ${seen}. That is the ` +
+      `pattern of a curated vault, where the listing names the lending protocol and the contract ` +
+      `names the curator who actually sets the risk policy. Your money answers to the second one, ` +
+      `and the listing never mentions them.`, onchain);
   }
   if (!assetOk) {
     return result("identity", WARN, "Asset naming differs on-chain",

@@ -1,18 +1,18 @@
 [
   {
-    "label": "Lista BNB @ 1.50%",
+    "label": "Lista USDT @ 5.47%",
     "investment": {
       "binanceChainId": "56",
       "defiProtocolId": "helio",
       "protocolName": "Lista",
-      "investmentId": "7dfe2f1bdd78f824365329edb4dc4772af2b1b93f47bf24eecb7fcdd426a45dd",
-      "investmentName": "BNB",
+      "investmentId": "375fd88612886bb87df0053fa1de8574f0f5ada1b92b7d52a34a34de94f683e7",
+      "investmentName": "USDT",
       "investType": "Earn",
       "apyType": "APY",
       "apy": null,
-      "tvl": "731698089.77",
-      "apyBps": 150,
-      "apyDisplay": "1.50%"
+      "tvl": "2693693.11",
+      "apyBps": 547,
+      "apyDisplay": "5.47%"
     },
     "verdict": "GO",
     "reason": "clear",
@@ -24,39 +24,39 @@
         "id": "listing",
         "level": "PASS",
         "title": "Product accepts deposits",
-        "detail": "Lista BNB — 1.50%, reported TVL $731,698,089.77",
+        "detail": "Lista USDT — 5.47%, reported TVL $2,693,693.11",
         "evidence": {
           "binanceChainId": "56",
           "defiProtocolId": "helio",
           "protocolName": "Lista",
           "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20240927/cee2f697-b4ea-4baf-955d-858d9eeac4f3.png",
-          "investmentId": "7dfe2f1bdd78f824365329edb4dc4772af2b1b93f47bf24eecb7fcdd426a45dd",
-          "investmentName": "BNB",
+          "investmentId": "375fd88612886bb87df0053fa1de8574f0f5ada1b92b7d52a34a34de94f683e7",
+          "investmentName": "USDT",
           "investType": "Earn",
           "investable": true,
           "apy": null,
           "apyType": "APY",
-          "tvl": "731698089.77",
+          "tvl": "2693693.11",
           "poolAddress": null,
           "feeRate": null,
           "assetTokenList": [
             {
-              "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-              "tokenName": "BNB Chain Native Token",
-              "tokenSymbol": "BNB"
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "tokenName": "Tether USDT",
+              "tokenSymbol": "USDT"
             }
           ],
           "rewardTokenList": [
             {
-              "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-              "tokenName": "BNB Chain Native Token",
-              "tokenSymbol": "BNB"
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "tokenName": "Tether USDT",
+              "tokenSymbol": "USDT"
             }
           ],
           "lpTokenList": [],
           "borrowTokenList": [],
-          "apyBps": 150,
-          "apyDisplay": "1.50%"
+          "apyBps": 547,
+          "apyDisplay": "5.47%"
         }
       },
       {
@@ -70,30 +70,30 @@
         "id": "simulate",
         "level": "PASS",
         "title": "Simulated without broadcasting",
-        "detail": "Would interact with 0x1adb950d8bb3da4be104211d5ab038628e477fe6 — network fee ≈ $0.0050",
+        "detail": "Would interact with 0xb5a30e1fa2cf3c8dea882124b3ab5a47a27c5dd2 — network fee ≈ $0.1716",
         "evidence": {
           "balanceChange": [
             {
-              "tokenSymbol": "BNB",
-              "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-              "amount": "-0.005",
-              "valueUsd": "3.691265891927627789390596648012309990180"
+              "tokenSymbol": "USDT",
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "amount": "-1",
+              "valueUsd": "0.9997075581837226"
             },
             {
-              "tokenSymbol": "slisBNB",
-              "tokenAddress": "0xb0b84d294e0c75a6abe60171b70edeb2efd14a1b",
-              "amount": "0.004816397725843414",
-              "valueUsd": "3.692353600596458404904584150565990080825448196134450976434749320288"
+              "tokenSymbol": "roxptUSDT",
+              "tokenAddress": "0xb5a30e1fa2cf3c8dea882124b3ab5a47a27c5dd2",
+              "amount": "0.982683331995326379",
+              "valueUsd": "0.9996827811102975070520884307537790372683812620935694"
             }
           ],
           "feeAndContract": {
             "estimatedNetworkFee": {
-              "amount": "0.000006835173292294",
+              "amount": "0.000231615035867418",
               "tokenSymbol": "BNB",
-              "valueUsd": "0.005046"
+              "valueUsd": "0.171570"
             },
             "interactWith": {
-              "address": "0x1adb950d8bb3da4be104211d5ab038628e477fe6"
+              "address": "0xb5a30e1fa2cf3c8dea882124b3ab5a47a27c5dd2"
             }
           },
           "warnings": []
@@ -102,51 +102,34 @@
       {
         "id": "identity",
         "level": "WARN",
-        "title": "Identity corroborated, not read directly",
-        "detail": "0x1adb950d8bb3da4be104211d5ab038628e477fe6 implements no name() or symbol(), which is permitted and common. Two independent sources agree on what it is instead: the chain shows its code cannot be replaced by any single key, and third-party records list this protocol, asset and rate. Weaker than reading the name off the contract, and enough to proceed on.",
+        "title": "Run by someone other than the listed protocol",
+        "detail": "The listing says Lista. The contract calls itself \"RockawayX PT Yield\" (roxptUSDT). That is the pattern of a curated vault, where the listing names the lending protocol and the contract names the curator who actually sets the risk policy. Your money answers to the second one, and the listing never mentions them.",
         "evidence": {
-          "address": "0x1adb950d8bb3da4be104211d5ab038628e477fe6",
+          "address": "0xb5a30e1fa2cf3c8dea882124b3ab5a47a27c5dd2",
           "isContract": true,
-          "symbol": null,
-          "name": null
+          "symbol": "roxptUSDT",
+          "name": "RockawayX PT Yield"
         }
       },
       {
         "id": "mutability",
         "level": "WARN",
-        "title": "Code can be replaced, but not instantly",
-        "detail": "0x1adb950d8bb3da4be104211d5ab038628e477fe6 is a proxy. Upgrade authority ends at a timelock with a 86400s delay, so a change is visible before it takes effect. Upgrade authority runs 0x8ce30a8d13d6d729708232aa415d7da46a4fa07b (contract) → 0x07d274a68393e8b8a2ccf19a2ce4ba3518735253 (timelock).",
+        "title": "Code can be replaced",
+        "detail": "0xb5a30e1fa2cf3c8dea882124b3ab5a47a27c5dd2 forwards to 0x713a7e23cff5016a479b079e48b575818a3fcc95, and that target can be changed. What was confirmed above is what runs today, not necessarily what runs when the money comes back out.",
         "evidence": {
           "isProxy": true,
-          "implementation": "0x86ba884d68cabe2a6e8f1f1f3b5540efd6e2dc55",
-          "admin": "0x8ce30a8d13d6d729708232aa415d7da46a4fa07b",
+          "implementation": "0x713a7e23cff5016a479b079e48b575818a3fcc95",
+          "admin": null,
           "beacon": null,
           "owner": null,
-          "chain": {
-            "hops": [
-              {
-                "address": "0x8ce30a8d13d6d729708232aa415d7da46a4fa07b",
-                "kind": "contract"
-              },
-              {
-                "address": "0x07d274a68393e8b8a2ccf19a2ce4ba3518735253",
-                "kind": "timelock",
-                "minDelaySeconds": 86400
-              }
-            ],
-            "endsAt": {
-              "address": "0x07d274a68393e8b8a2ccf19a2ce4ba3518735253",
-              "kind": "timelock",
-              "minDelaySeconds": 86400
-            }
-          }
+          "chain": null
         }
       },
       {
         "id": "value",
         "level": "PASS",
         "title": "Value is conserved",
-        "detail": "$3.69 in → $3.69 of position (+0.03% difference).",
+        "detail": "$1.00 in → $1.00 of position (-0.00% difference).",
         "evidence": null
       },
       {
@@ -164,10 +147,10 @@
         "id": "history",
         "level": "WARN",
         "title": "Cannot tell which pool this is",
-        "detail": "3 independent pools carry this protocol and asset, and none advertises a matching rate. The nearest is 1.11% against the listed 1.50% (0.39pp apart). Which pool a deposit would enter cannot be established, so its history cannot be read.",
+        "detail": "5 independent pools carry this protocol and asset, and none advertises a matching rate. The nearest is 5.36% against the listed 5.47% (0.11pp apart). Which pool a deposit would enter cannot be established, so its history cannot be read.",
         "evidence": {
           "recognised": true,
-          "candidates": 3
+          "candidates": 5
         }
       },
       {
@@ -180,19 +163,19 @@
     ]
   },
   {
-    "label": "Aster BNB @ 1.50%",
+    "label": "Lista USDT @ 4.98%",
     "investment": {
       "binanceChainId": "56",
-      "defiProtocolId": "astherus",
-      "protocolName": "Aster",
-      "investmentId": "8ab5e3ea16586e99338c8f57b2d297646a224e68b2812bea0b16fa5446d8899d",
-      "investmentName": "BNB",
+      "defiProtocolId": "helio",
+      "protocolName": "Lista",
+      "investmentId": "dfeb150e81cf3b1b5861b30db363ae824853a6fb3beb7fa4a83885dd0f414654",
+      "investmentName": "USDT",
       "investType": "Earn",
       "apyType": "APY",
       "apy": null,
-      "tvl": "84018089.91",
-      "apyBps": 150,
-      "apyDisplay": "1.50%"
+      "tvl": "9082702.2",
+      "apyBps": 498,
+      "apyDisplay": "4.98%"
     },
     "verdict": "NO-GO",
     "reason": "unverified",
@@ -204,39 +187,39 @@
         "id": "listing",
         "level": "PASS",
         "title": "Product accepts deposits",
-        "detail": "Aster BNB — 1.50%, reported TVL $84,018,089.91",
+        "detail": "Lista USDT — 4.98%, reported TVL $9,082,702.2",
         "evidence": {
           "binanceChainId": "56",
-          "defiProtocolId": "astherus",
-          "protocolName": "Aster",
-          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20250911/898fedd6-5bf3-4c89-a02c-aadf5c056553.jpg",
-          "investmentId": "8ab5e3ea16586e99338c8f57b2d297646a224e68b2812bea0b16fa5446d8899d",
-          "investmentName": "BNB",
+          "defiProtocolId": "helio",
+          "protocolName": "Lista",
+          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20240927/cee2f697-b4ea-4baf-955d-858d9eeac4f3.png",
+          "investmentId": "dfeb150e81cf3b1b5861b30db363ae824853a6fb3beb7fa4a83885dd0f414654",
+          "investmentName": "USDT",
           "investType": "Earn",
           "investable": true,
           "apy": null,
           "apyType": "APY",
-          "tvl": "84018089.91",
+          "tvl": "9082702.2",
           "poolAddress": null,
           "feeRate": null,
           "assetTokenList": [
             {
-              "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-              "tokenName": "BNB Chain Native Token",
-              "tokenSymbol": "BNB"
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "tokenName": "Tether USDT",
+              "tokenSymbol": "USDT"
             }
           ],
           "rewardTokenList": [
             {
-              "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-              "tokenName": "BNB Chain Native Token",
-              "tokenSymbol": "BNB"
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "tokenName": "Tether USDT",
+              "tokenSymbol": "USDT"
             }
           ],
           "lpTokenList": [],
           "borrowTokenList": [],
-          "apyBps": 150,
-          "apyDisplay": "1.50%"
+          "apyBps": 498,
+          "apyDisplay": "4.98%"
         }
       },
       {
@@ -250,30 +233,36 @@
         "id": "simulate",
         "level": "PASS",
         "title": "Simulated without broadcasting",
-        "detail": "Would interact with 0x2f31ab8950c50080e77999fa456372f276952fd8 — network fee ≈ $0.0416",
+        "detail": "Would interact with 0x66de07893db7492b56ba88503b4cc99bab1796f3 — network fee ≈ $0.1883",
         "evidence": {
           "balanceChange": [
             {
-              "tokenSymbol": "BNB",
-              "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-              "amount": "-0.005",
-              "valueUsd": "3.692437963349437659882219289365073004930"
+              "tokenSymbol": "USDT",
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "amount": "-1",
+              "valueUsd": "0.9997649511624648"
             },
             {
-              "tokenSymbol": "asBNB",
-              "tokenAddress": "0x77734e70b6e88b4d82fe632a168edf6e700912b6",
-              "amount": "0.004687436030113705",
-              "valueUsd": "3.692353600594629972523688622835903140351425176719070353777747982320"
+              "tokenSymbol": "sLisUSD",
+              "tokenAddress": "0x37db1ae9b24055d1f9fe973aea40b7eb2995d0bf",
+              "amount": "0.917047519106312555",
+              "valueUsd": "0.9974734069914456809686093047637210"
+            },
+            {
+              "tokenSymbol": "StakeUSDTListaDistributor",
+              "tokenAddress": "0xf2fa32498305e6595e3d54dc41674d0fca207026",
+              "amount": "1",
+              "valueUsd": null
             }
           ],
           "feeAndContract": {
             "estimatedNetworkFee": {
-              "amount": "0.000056383993462992",
+              "amount": "0.000253309267338",
               "tokenSymbol": "BNB",
-              "valueUsd": "0.041639"
+              "valueUsd": "0.188330"
             },
             "interactWith": {
-              "address": "0x2f31ab8950c50080e77999fa456372f276952fd8"
+              "address": "0x66de07893db7492b56ba88503b4cc99bab1796f3"
             }
           },
           "warnings": []
@@ -283,9 +272,9 @@
         "id": "identity",
         "level": "UNTESTED",
         "title": "Contract does not name itself",
-        "detail": "0x2f31ab8950c50080e77999fa456372f276952fd8 holds code but exposes no name() or symbol(), so its identity could not be confirmed this way. It was not shown to be wrong — it could not be read.",
+        "detail": "0x66de07893db7492b56ba88503b4cc99bab1796f3 holds code but exposes no name() or symbol(), so its identity could not be confirmed this way. It was not shown to be wrong — it could not be read.",
         "evidence": {
-          "address": "0x2f31ab8950c50080e77999fa456372f276952fd8",
+          "address": "0x66de07893db7492b56ba88503b4cc99bab1796f3",
           "isContract": true,
           "symbol": null,
           "name": null
@@ -295,10 +284,10 @@
         "id": "mutability",
         "level": "WARN",
         "title": "Code can be replaced",
-        "detail": "0x2f31ab8950c50080e77999fa456372f276952fd8 forwards to 0x7f52773065fd350b5a935ce2b293fdb16551a6fc, and that target can be changed. What was confirmed above is what runs today, not necessarily what runs when the money comes back out.",
+        "detail": "0x66de07893db7492b56ba88503b4cc99bab1796f3 forwards to 0x143c8b6b1161dec945d1fb7c2ca13c3b1d164642, and that target can be changed. What was confirmed above is what runs today, not necessarily what runs when the money comes back out.",
         "evidence": {
           "isProxy": true,
-          "implementation": "0x7f52773065fd350b5a935ce2b293fdb16551a6fc",
+          "implementation": "0x143c8b6b1161dec945d1fb7c2ca13c3b1d164642",
           "admin": null,
           "beacon": null,
           "owner": null,
@@ -309,7 +298,7 @@
         "id": "value",
         "level": "PASS",
         "title": "Value is conserved",
-        "detail": "$3.69 in → $3.69 of position (-0.00% difference).",
+        "detail": "$1.00 in → $1.00 of position (-0.23% difference).",
         "evidence": null
       },
       {
@@ -326,9 +315,12 @@
       {
         "id": "history",
         "level": "WARN",
-        "title": "No independent record of this pool",
-        "detail": "No third-party record exists for Aster BNB, so today's 1.50% cannot be compared against any history.",
-        "evidence": null
+        "title": "Cannot tell which pool this is",
+        "detail": "5 independent pools carry this protocol and asset, and none advertises a matching rate. The nearest is 4.60% against the listed 4.98% (0.38pp apart). Which pool a deposit would enter cannot be established, so its history cannot be read.",
+        "evidence": {
+          "recognised": true,
+          "candidates": 5
+        }
       },
       {
         "id": "capacity",
@@ -340,19 +332,19 @@
     ]
   },
   {
-    "label": "Lista BNB @ 0.13%",
+    "label": "Aave V3 USDT @ 2.90%",
     "investment": {
       "binanceChainId": "56",
-      "defiProtocolId": "helio",
-      "protocolName": "Lista",
-      "investmentId": "f5ebbb10a826ac281c785950d5901d82a30f7852313870afbabac237230966a8",
-      "investmentName": "BNB",
+      "defiProtocolId": "aave3",
+      "protocolName": "Aave V3",
+      "investmentId": "9e901e308ea48144dcce3d77f22be8fbc0dbeef09167174a5a5dbb3b05c6a5e8",
+      "investmentName": "USDT",
       "investType": "Earn",
       "apyType": "APY",
       "apy": null,
-      "tvl": "360420828.42",
-      "apyBps": 13,
-      "apyDisplay": "0.13%"
+      "tvl": "59585822",
+      "apyBps": 290,
+      "apyDisplay": "2.90%"
     },
     "verdict": "NO-GO",
     "reason": "unverified",
@@ -364,39 +356,39 @@
         "id": "listing",
         "level": "PASS",
         "title": "Product accepts deposits",
-        "detail": "Lista BNB — 0.13%, reported TVL $360,420,828.42",
+        "detail": "Aave V3 USDT — 2.90%, reported TVL $59,585,822",
         "evidence": {
           "binanceChainId": "56",
-          "defiProtocolId": "helio",
-          "protocolName": "Lista",
-          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20240927/cee2f697-b4ea-4baf-955d-858d9eeac4f3.png",
-          "investmentId": "f5ebbb10a826ac281c785950d5901d82a30f7852313870afbabac237230966a8",
-          "investmentName": "BNB",
+          "defiProtocolId": "aave3",
+          "protocolName": "Aave V3",
+          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20241028/dcb5bfbf-cbe2-4ddd-a7b3-3a22c3e45a27.png",
+          "investmentId": "9e901e308ea48144dcce3d77f22be8fbc0dbeef09167174a5a5dbb3b05c6a5e8",
+          "investmentName": "USDT",
           "investType": "Earn",
           "investable": true,
           "apy": null,
           "apyType": "APY",
-          "tvl": "360420828.42",
+          "tvl": "59585822",
           "poolAddress": null,
           "feeRate": null,
           "assetTokenList": [
             {
-              "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-              "tokenName": "BNB Chain Native Token",
-              "tokenSymbol": "BNB"
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "tokenName": "Tether USDT",
+              "tokenSymbol": "USDT"
             }
           ],
           "rewardTokenList": [
             {
-              "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-              "tokenName": "BNB Chain Native Token",
-              "tokenSymbol": "BNB"
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "tokenName": "Tether USDT",
+              "tokenSymbol": "USDT"
             }
           ],
           "lpTokenList": [],
           "borrowTokenList": [],
-          "apyBps": 13,
-          "apyDisplay": "0.13%"
+          "apyBps": 290,
+          "apyDisplay": "2.90%"
         }
       },
       {
@@ -410,30 +402,30 @@
         "id": "simulate",
         "level": "PASS",
         "title": "Simulated without broadcasting",
-        "detail": "Would interact with 0x367384c54756a25340c63057d87ea22d47fd5701 — network fee ≈ $0.0635",
+        "detail": "Would interact with 0x6807dc923806fe8fd134338eabca509979a7e0cb — network fee ≈ $0.0298",
         "evidence": {
           "balanceChange": [
             {
-              "tokenSymbol": "BNB",
-              "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-              "amount": "-0.005",
-              "valueUsd": "3.692080791828022878183970264549154931795"
+              "tokenSymbol": "USDT",
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "amount": "-1",
+              "valueUsd": "0.9997434342121628"
             },
             {
-              "tokenSymbol": "ListaBNB",
-              "tokenAddress": "0x57134a64b7cd9f9eb72f8255a671f5bf2fe3e2d0",
-              "amount": "0.004919530415081009",
-              "valueUsd": "3.690944905900832308573172417282179464354314503139127599480760474135942455"
+              "tokenSymbol": "aBnbUSDT",
+              "tokenAddress": "0xa9251ca9de909cb71783723713b21e4233fbf1b1",
+              "amount": "0.999999999999999999",
+              "valueUsd": "0.99975999999999999900024"
             }
           ],
           "feeAndContract": {
             "estimatedNetworkFee": {
-              "amount": "0.000085978142201095",
+              "amount": "0.00004003924419273",
               "tokenSymbol": "BNB",
-              "valueUsd": "0.063488"
+              "valueUsd": "0.029771"
             },
             "interactWith": {
-              "address": "0x367384c54756a25340c63057d87ea22d47fd5701"
+              "address": "0x6807dc923806fe8fd134338eabca509979a7e0cb"
             }
           },
           "warnings": []
@@ -443,9 +435,9 @@
         "id": "identity",
         "level": "UNTESTED",
         "title": "Contract does not name itself",
-        "detail": "0x367384c54756a25340c63057d87ea22d47fd5701 holds code but exposes no name() or symbol(), so its identity could not be confirmed this way. It was not shown to be wrong — it could not be read.",
+        "detail": "0x6807dc923806fe8fd134338eabca509979a7e0cb holds code but exposes no name() or symbol(), so its identity could not be confirmed this way. It was not shown to be wrong — it could not be read.",
         "evidence": {
-          "address": "0x367384c54756a25340c63057d87ea22d47fd5701",
+          "address": "0x6807dc923806fe8fd134338eabca509979a7e0cb",
           "isContract": true,
           "symbol": null,
           "name": null
@@ -455,10 +447,10 @@
         "id": "mutability",
         "level": "WARN",
         "title": "Code can be replaced",
-        "detail": "0x367384c54756a25340c63057d87ea22d47fd5701 forwards to 0x76c2919d75132af92f765c3b923c6fd9b0c1a5b6, and that target can be changed. What was confirmed above is what runs today, not necessarily what runs when the money comes back out.",
+        "detail": "0x6807dc923806fe8fd134338eabca509979a7e0cb forwards to 0x5e2b0fcc5b9734c7ec0a03401ee9e6805f783b6d, and that target can be changed. What was confirmed above is what runs today, not necessarily what runs when the money comes back out.",
         "evidence": {
           "isProxy": true,
-          "implementation": "0x76c2919d75132af92f765c3b923c6fd9b0c1a5b6",
+          "implementation": "0x5e2b0fcc5b9734c7ec0a03401ee9e6805f783b6d",
           "admin": null,
           "beacon": null,
           "owner": null,
@@ -469,7 +461,7 @@
         "id": "value",
         "level": "PASS",
         "title": "Value is conserved",
-        "detail": "$3.69 in → $3.69 of position (-0.03% difference).",
+        "detail": "$1.00 in → $1.00 of position (+0.00% difference).",
         "evidence": null
       },
       {
@@ -487,43 +479,43 @@
         "id": "history",
         "level": "PASS",
         "title": "Rate is normal for this pool",
-        "detail": "0.13% sits at the 27th percentile of 477 days of record (median 1.32%) since 2025-05-20.",
+        "detail": "2.90% sits at the 50th percentile of 821 days of record (median 2.89%) since 2024-06-10.",
         "evidence": {
-          "samples": 477,
-          "from": "2025-05-20",
-          "median": 1.32353,
-          "p90": 2.62187,
-          "max": 4.91631,
-          "percentile": 0.26834381551362685,
-          "ratioToMedian": 0.09822217856792063,
-          "project": "lista-lending",
-          "poolId": "e15db93c-9c49-490c-896d-24092b4d7471",
-          "tvlUsd": 361041673
+          "samples": 821,
+          "from": "2024-06-10",
+          "median": 2.88798,
+          "p90": 6.71442,
+          "max": 16.70333,
+          "percentile": 0.5030450669914738,
+          "ratioToMedian": 1.0041620786847554,
+          "project": "aave-v3",
+          "poolId": "29be6a85-414f-4a66-b075-98863278912a",
+          "tvlUsd": 11117206
         }
       },
       {
         "id": "capacity",
         "level": "PASS",
         "title": "Pool can absorb this deposit",
-        "detail": "$3.69 is 0.00% of a $361,041,673 pool.",
+        "detail": "$1.00 is 0.00% of a $11,117,206 pool.",
         "evidence": null
       }
     ]
   },
   {
-    "label": "Venus BNB @ 0.07%",
+    "label": "Venus USDT @ 2.82%",
     "investment": {
       "binanceChainId": "56",
       "defiProtocolId": "venus",
       "protocolName": "Venus",
-      "investmentId": "c846d45200f80911f406cc4926c493331e59edfea2c2e1d0396d6b9d58bad1c4",
-      "investmentName": "BNB",
+      "investmentId": "5b77bfd8d8f7c18e9ee0d8f331c4d78f56744eed8addbe2e9970c0ef37e763cb",
+      "investmentName": "USDT",
       "investType": "Earn",
       "apyType": "APY",
       "apy": null,
-      "tvl": "424769890.77",
-      "apyBps": 7,
-      "apyDisplay": "0.07%"
+      "tvl": "195001955.71",
+      "apyBps": 282,
+      "apyDisplay": "2.82%"
     },
     "verdict": "GO",
     "reason": "clear",
@@ -535,39 +527,39 @@
         "id": "listing",
         "level": "PASS",
         "title": "Product accepts deposits",
-        "detail": "Venus BNB — 0.07%, reported TVL $424,769,890.77",
+        "detail": "Venus USDT — 2.82%, reported TVL $195,001,955.71",
         "evidence": {
           "binanceChainId": "56",
           "defiProtocolId": "venus",
           "protocolName": "Venus",
           "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20241028/0d696959-4857-4e0d-a2b5-3022264d34b5.jpg",
-          "investmentId": "c846d45200f80911f406cc4926c493331e59edfea2c2e1d0396d6b9d58bad1c4",
-          "investmentName": "BNB",
+          "investmentId": "5b77bfd8d8f7c18e9ee0d8f331c4d78f56744eed8addbe2e9970c0ef37e763cb",
+          "investmentName": "USDT",
           "investType": "Earn",
           "investable": true,
           "apy": null,
           "apyType": "APY",
-          "tvl": "424769890.77",
+          "tvl": "195001955.71",
           "poolAddress": null,
           "feeRate": null,
           "assetTokenList": [
             {
-              "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-              "tokenName": "BNB Chain Native Token",
-              "tokenSymbol": "BNB"
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "tokenName": "Tether USDT",
+              "tokenSymbol": "USDT"
             }
           ],
           "rewardTokenList": [
             {
-              "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-              "tokenName": "BNB Chain Native Token",
-              "tokenSymbol": "BNB"
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "tokenName": "Tether USDT",
+              "tokenSymbol": "USDT"
             }
           ],
           "lpTokenList": [],
           "borrowTokenList": [],
-          "apyBps": 7,
-          "apyDisplay": "0.07%"
+          "apyBps": 282,
+          "apyDisplay": "2.82%"
         }
       },
       {
@@ -581,30 +573,30 @@
         "id": "simulate",
         "level": "PASS",
         "title": "Simulated without broadcasting",
-        "detail": "Would interact with 0xa07c5b74c9b40447a954e1466938b865b6bbea36 — network fee ≈ $0.0115",
+        "detail": "Would interact with 0xfd5840cd36d94d7229439859c0112a4185bc0255 — network fee ≈ $0.0382",
         "evidence": {
           "balanceChange": [
             {
-              "tokenSymbol": "BNB",
-              "tokenAddress": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-              "amount": "-0.005",
-              "valueUsd": "3.692057109245112711458537430355549532945"
+              "tokenSymbol": "USDT",
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "amount": "-1",
+              "valueUsd": "0.9997488134990762"
             },
             {
-              "tokenSymbol": "vBNB",
-              "tokenAddress": "0xa07c5b74c9b40447a954e1466938b865b6bbea36",
-              "amount": "0.20043514",
-              "valueUsd": "3.69211127004647612992664285850467467945165897150203129564"
+              "tokenSymbol": "vUSDT",
+              "tokenAddress": "0xfd5840cd36d94d7229439859c0112a4185bc0255",
+              "amount": "37.76465754",
+              "valueUsd": "0.99969471846765630426045764772175032"
             }
           ],
           "feeAndContract": {
             "estimatedNetworkFee": {
-              "amount": "0.000015588973205617",
+              "amount": "0.000051250841358115",
               "tokenSymbol": "BNB",
-              "valueUsd": "0.011511"
+              "valueUsd": "0.038181"
             },
             "interactWith": {
-              "address": "0xa07c5b74c9b40447a954e1466938b865b6bbea36"
+              "address": "0xfd5840cd36d94d7229439859c0112a4185bc0255"
             }
           },
           "warnings": []
@@ -614,19 +606,19 @@
         "id": "identity",
         "level": "PASS",
         "title": "Contract confirmed on-chain",
-        "detail": "Chain reports \"Venus BNB\" (vBNB) — consistent with Venus BNB.",
+        "detail": "Chain reports \"Venus USDT\" (vUSDT) — consistent with Venus USDT.",
         "evidence": {
-          "address": "0xa07c5b74c9b40447a954e1466938b865b6bbea36",
+          "address": "0xfd5840cd36d94d7229439859c0112a4185bc0255",
           "isContract": true,
-          "symbol": "vBNB",
-          "name": "Venus BNB"
+          "symbol": "vUSDT",
+          "name": "Venus USDT"
         }
       },
       {
         "id": "mutability",
         "level": "PASS",
         "title": "Code cannot be swapped",
-        "detail": "0xa07c5b74c9b40447a954e1466938b865b6bbea36 holds its own logic. What was verified here is what runs, and nobody can replace it.",
+        "detail": "0xfd5840cd36d94d7229439859c0112a4185bc0255 holds its own logic. What was verified here is what runs, and nobody can replace it.",
         "evidence": {
           "isProxy": false,
           "implementation": null,
@@ -639,7 +631,7 @@
         "id": "value",
         "level": "PASS",
         "title": "Value is conserved",
-        "detail": "$3.69 in → $3.69 of position (+0.00% difference).",
+        "detail": "$1.00 in → $1.00 of position (-0.01% difference).",
         "evidence": null
       },
       {
@@ -657,25 +649,358 @@
         "id": "history",
         "level": "PASS",
         "title": "Rate is normal for this pool",
-        "detail": "0.07% sits at the 8th percentile of 1526 days of record (median 0.30%) since 2022-07-06.",
+        "detail": "2.82% sits at the 45th percentile of 1526 days of record (median 3.09%) since 2022-07-06.",
         "evidence": {
           "samples": 1526,
           "from": "2022-07-06",
-          "median": 0.30301,
-          "p90": 6.5833,
-          "max": 93.80352,
-          "percentile": 0.0779816513761468,
-          "ratioToMedian": 0.23101547803702852,
+          "median": 3.09214,
+          "p90": 8.90021,
+          "max": 27.67305,
+          "percentile": 0.44626474442988207,
+          "ratioToMedian": 0.9119897546682879,
           "project": "venus-core-pool",
-          "poolId": "747b58ab-aefd-42e1-a312-01ad5a0ab7f5",
-          "tvlUsd": 346459375
+          "poolId": "9f3a6015-5045-4471-ba65-ad3dc7c38269",
+          "tvlUsd": 60753781
         }
       },
       {
         "id": "capacity",
         "level": "PASS",
         "title": "Pool can absorb this deposit",
-        "detail": "$3.69 is 0.00% of a $346,459,375 pool.",
+        "detail": "$1.00 is 0.00% of a $60,753,781 pool.",
+        "evidence": null
+      }
+    ]
+  },
+  {
+    "label": "Venus Flux USDT @ 2.54%",
+    "investment": {
+      "binanceChainId": "56",
+      "defiProtocolId": "venusflux",
+      "protocolName": "Venus Flux",
+      "investmentId": "f7ebeb9f3d6345d641189881d3aa6120fba632a605ef58294062c06852f9ab29",
+      "investmentName": "USDT",
+      "investType": "Earn",
+      "apyType": "APY",
+      "apy": null,
+      "tvl": "2082702.04",
+      "apyBps": 254,
+      "apyDisplay": "2.54%"
+    },
+    "verdict": "GO",
+    "reason": "clear",
+    "blocked": 0,
+    "untested": 0,
+    "warned": 1,
+    "checks": [
+      {
+        "id": "listing",
+        "level": "PASS",
+        "title": "Product accepts deposits",
+        "detail": "Venus Flux USDT — 2.54%, reported TVL $2,082,702.04",
+        "evidence": {
+          "binanceChainId": "56",
+          "defiProtocolId": "venusflux",
+          "protocolName": "Venus Flux",
+          "protocolLogo": "https://bin.bnbstatic.com/images/web3-data/public/protocol/logos/92bb55c3792140b985942a513530b5dd.png",
+          "investmentId": "f7ebeb9f3d6345d641189881d3aa6120fba632a605ef58294062c06852f9ab29",
+          "investmentName": "USDT",
+          "investType": "Earn",
+          "investable": true,
+          "apy": null,
+          "apyType": "APY",
+          "tvl": "2082702.04",
+          "poolAddress": null,
+          "feeRate": null,
+          "assetTokenList": [
+            {
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "tokenName": "Tether USDT",
+              "tokenSymbol": "USDT"
+            }
+          ],
+          "rewardTokenList": [
+            {
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "tokenName": "Tether USDT",
+              "tokenSymbol": "USDT"
+            }
+          ],
+          "lpTokenList": [],
+          "borrowTokenList": [],
+          "apyBps": 254,
+          "apyDisplay": "2.54%"
+        }
+      },
+      {
+        "id": "ratetype",
+        "level": "PASS",
+        "title": "Rate is a yield",
+        "detail": "Reported as APY — a return, comparable with other APY figures.",
+        "evidence": null
+      },
+      {
+        "id": "simulate",
+        "level": "PASS",
+        "title": "Simulated without broadcasting",
+        "detail": "Would interact with 0xa5b8fca32e5252b0b58eabf1a8c79d958f8ee6a2 — network fee ≈ $0.0277",
+        "evidence": {
+          "balanceChange": [
+            {
+              "tokenSymbol": "USDT",
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "amount": "-1",
+              "valueUsd": "0.9997791919794736"
+            },
+            {
+              "tokenSymbol": "fUSDT",
+              "tokenAddress": "0xa5b8fca32e5252b0b58eabf1a8c79d958f8ee6a2",
+              "amount": "0.974404379999412599",
+              "valueUsd": "0.999699047417771977757438648689296546062096916"
+            }
+          ],
+          "feeAndContract": {
+            "estimatedNetworkFee": {
+              "amount": "0.00003725840030478",
+              "tokenSymbol": "BNB",
+              "valueUsd": "0.027694"
+            },
+            "interactWith": {
+              "address": "0xa5b8fca32e5252b0b58eabf1a8c79d958f8ee6a2"
+            }
+          },
+          "warnings": []
+        }
+      },
+      {
+        "id": "identity",
+        "level": "WARN",
+        "title": "Run by someone other than the listed protocol",
+        "detail": "The listing says Venus Flux. The contract calls itself \"Fluid Tether USD\" (fUSDT). That is the pattern of a curated vault, where the listing names the lending protocol and the contract names the curator who actually sets the risk policy. Your money answers to the second one, and the listing never mentions them.",
+        "evidence": {
+          "address": "0xa5b8fca32e5252b0b58eabf1a8c79d958f8ee6a2",
+          "isContract": true,
+          "symbol": "fUSDT",
+          "name": "Fluid Tether USD"
+        }
+      },
+      {
+        "id": "mutability",
+        "level": "PASS",
+        "title": "Code cannot be swapped",
+        "detail": "0xa5b8fca32e5252b0b58eabf1a8c79d958f8ee6a2 holds its own logic. What was verified here is what runs, and nobody can replace it.",
+        "evidence": {
+          "isProxy": false,
+          "implementation": null,
+          "admin": null,
+          "beacon": null,
+          "owner": null
+        }
+      },
+      {
+        "id": "value",
+        "level": "PASS",
+        "title": "Value is conserved",
+        "detail": "$1.00 in → $1.00 of position (-0.01% difference).",
+        "evidence": null
+      },
+      {
+        "id": "exit",
+        "level": "PASS",
+        "title": "Exit path exists",
+        "detail": "Exit reached the position check (no position held yet), so the withdraw path is wired up.",
+        "evidence": {
+          "code": 60003001,
+          "name": "INVESTMENT_NO_POSITION",
+          "message": "You don't have any position in this investment product."
+        }
+      },
+      {
+        "id": "history",
+        "level": "PASS",
+        "title": "Rate is normal for this pool",
+        "detail": "2.54% sits at the 37th percentile of 187 days of record (median 2.97%) since 2026-03-06.",
+        "evidence": {
+          "samples": 187,
+          "from": "2026-03-06",
+          "median": 2.97,
+          "p90": 7.06,
+          "max": 52.55,
+          "percentile": 0.37433155080213903,
+          "ratioToMedian": 0.8552188552188552,
+          "project": "venus-flux",
+          "poolId": "f45554c1-21be-4d8d-a974-d23c3ad47624",
+          "tvlUsd": 2082882
+        }
+      },
+      {
+        "id": "capacity",
+        "level": "PASS",
+        "title": "Pool can absorb this deposit",
+        "detail": "$1.00 is 0.00% of a $2,082,882 pool.",
+        "evidence": null
+      }
+    ]
+  },
+  {
+    "label": "Lista USDT @ 2.38%",
+    "investment": {
+      "binanceChainId": "56",
+      "defiProtocolId": "helio",
+      "protocolName": "Lista",
+      "investmentId": "fd3134fdfe2ad1493fa09453890cddf67165d8a2ddff5c35515582f3be097b54",
+      "investmentName": "USDT",
+      "investType": "Earn",
+      "apyType": "APY",
+      "apy": null,
+      "tvl": "2660296.4",
+      "apyBps": 238,
+      "apyDisplay": "2.38%"
+    },
+    "verdict": "GO",
+    "reason": "clear",
+    "blocked": 0,
+    "untested": 0,
+    "warned": 4,
+    "checks": [
+      {
+        "id": "listing",
+        "level": "PASS",
+        "title": "Product accepts deposits",
+        "detail": "Lista USDT — 2.38%, reported TVL $2,660,296.4",
+        "evidence": {
+          "binanceChainId": "56",
+          "defiProtocolId": "helio",
+          "protocolName": "Lista",
+          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20240927/cee2f697-b4ea-4baf-955d-858d9eeac4f3.png",
+          "investmentId": "fd3134fdfe2ad1493fa09453890cddf67165d8a2ddff5c35515582f3be097b54",
+          "investmentName": "USDT",
+          "investType": "Earn",
+          "investable": true,
+          "apy": null,
+          "apyType": "APY",
+          "tvl": "2660296.4",
+          "poolAddress": null,
+          "feeRate": null,
+          "assetTokenList": [
+            {
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "tokenName": "Tether USDT",
+              "tokenSymbol": "USDT"
+            }
+          ],
+          "rewardTokenList": [
+            {
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "tokenName": "Tether USDT",
+              "tokenSymbol": "USDT"
+            }
+          ],
+          "lpTokenList": [],
+          "borrowTokenList": [],
+          "apyBps": 238,
+          "apyDisplay": "2.38%"
+        }
+      },
+      {
+        "id": "ratetype",
+        "level": "PASS",
+        "title": "Rate is a yield",
+        "detail": "Reported as APY — a return, comparable with other APY figures.",
+        "evidence": null
+      },
+      {
+        "id": "simulate",
+        "level": "PASS",
+        "title": "Simulated without broadcasting",
+        "detail": "Would interact with 0x6d6783c146f2b0b2774c1725297f1845dc502525 — network fee ≈ $0.1141",
+        "evidence": {
+          "balanceChange": [
+            {
+              "tokenSymbol": "ListaUSDT",
+              "tokenAddress": "0x6d6783c146f2b0b2774c1725297f1845dc502525",
+              "amount": "0.963445353197989232",
+              "valueUsd": "0.999699086057940957330973804148775101616690415726368"
+            },
+            {
+              "tokenSymbol": "USDT",
+              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
+              "amount": "-1",
+              "valueUsd": "0.9997219528425608"
+            }
+          ],
+          "feeAndContract": {
+            "estimatedNetworkFee": {
+              "amount": "0.000153529431117992",
+              "tokenSymbol": "BNB",
+              "valueUsd": "0.114072"
+            },
+            "interactWith": {
+              "address": "0x6d6783c146f2b0b2774c1725297f1845dc502525"
+            }
+          },
+          "warnings": []
+        }
+      },
+      {
+        "id": "identity",
+        "level": "WARN",
+        "title": "Run by someone other than the listed protocol",
+        "detail": "The listing says Lista. The contract calls itself \"Gauntlet USDT Vault\" (vGauntletUSDT). That is the pattern of a curated vault, where the listing names the lending protocol and the contract names the curator who actually sets the risk policy. Your money answers to the second one, and the listing never mentions them.",
+        "evidence": {
+          "address": "0x6d6783c146f2b0b2774c1725297f1845dc502525",
+          "isContract": true,
+          "symbol": "vGauntletUSDT",
+          "name": "Gauntlet USDT Vault"
+        }
+      },
+      {
+        "id": "mutability",
+        "level": "WARN",
+        "title": "Code can be replaced",
+        "detail": "0x6d6783c146f2b0b2774c1725297f1845dc502525 forwards to 0x713a7e23cff5016a479b079e48b575818a3fcc95, and that target can be changed. What was confirmed above is what runs today, not necessarily what runs when the money comes back out.",
+        "evidence": {
+          "isProxy": true,
+          "implementation": "0x713a7e23cff5016a479b079e48b575818a3fcc95",
+          "admin": null,
+          "beacon": null,
+          "owner": null,
+          "chain": null
+        }
+      },
+      {
+        "id": "value",
+        "level": "PASS",
+        "title": "Value is conserved",
+        "detail": "$1.00 in → $1.00 of position (-0.00% difference).",
+        "evidence": null
+      },
+      {
+        "id": "exit",
+        "level": "PASS",
+        "title": "Exit path exists",
+        "detail": "Exit reached the position check (no position held yet), so the withdraw path is wired up.",
+        "evidence": {
+          "code": 60003001,
+          "name": "INVESTMENT_NO_POSITION",
+          "message": "You don't have any position in this investment product."
+        }
+      },
+      {
+        "id": "history",
+        "level": "WARN",
+        "title": "Cannot tell which pool this is",
+        "detail": "5 independent pools carry this protocol and asset, and none advertises a matching rate. The nearest is 2.21% against the listed 2.38% (0.17pp apart). Which pool a deposit would enter cannot be established, so its history cannot be read.",
+        "evidence": {
+          "recognised": true,
+          "candidates": 5
+        }
+      },
+      {
+        "id": "capacity",
+        "level": "WARN",
+        "title": "Pool size unknown",
+        "detail": "Could not establish independent pool size, so deposit impact is unknown.",
         "evidence": null
       }
     ]
