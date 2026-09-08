@@ -251,6 +251,53 @@ differ on every pass and the job would commit a new time every four hours whethe
 or not anything happened, leaving a real change as one commit among hundreds of
 empty ones.
 
+## Reading the specification instead of guessing at it
+
+Most of this tool was built by watching what the wallet CLI did and inferring rules from it. That
+is how you end up with rules that are almost right. Going back through the published DeFi API
+reference and then measuring the CLI against it found four things the inferred version had wrong.
+
+**Refusals were being blamed on the product.** A deposit preview was run against all 144 Earn and
+LiquidityPool products on BSC. 101 of the refusals were the wallet not holding the token. One was a
+minimum deposit of 1 USDT on a Lista product, which the listing never mentions. 43 were a parameter
+this program had failed to supply. None was the product rejecting a deposit. Every one of them had
+been reported the same way, as `Simulation refused`, which reads as a finding and almost never was
+one. `src/refusal.js` now separates a refusal about the wallet from a refusal about the product,
+and only the second counts as evidence.
+
+The error name alone is not enough to do that, because `SERVICE_ERROR` is not a service error. It
+is where the CLI puts ordinary business rejections, so a minimum deposit and a missing tick range
+both arrive under it. The published table says to branch on the numeric code rather than the
+message, but the CLI does not expose those codes, so for that one name the message has to be read.
+
+**Withdrawal speed was never checked.** Lista and Aster hold redemptions for a waiting period
+before the funds can be claimed. The listing shows the same shape of row either way: one rate, no
+mention of a queue. The highest-yielding USDT product that clears every other check is a Lista
+product, so this was not hypothetical. There is now a check for it, and a redeem reports the delay
+back rather than saying the money has been withdrawn when it has not.
+
+**Some positions cannot be withdrawn through the API at all.** Position queries cover more
+protocols than transaction building does. The extra ones still come back carrying an
+`investmentId`, and it does not work. The only way to tell is to look the ID up in the investment
+list, which `src/positions.js` now does before offering a withdraw button.
+
+**Binance scores every protocol it lists, and the score is on a different call.** `protocol-info`
+returns a security score and six dimension scores including governance strength. None of it appears
+near the rate. Aave scores 94.48, Lista 92.83, Venus 92.21, Solv 88.75, and Aster returns null
+while sitting in the same list looking identical. That is now a check.
+
+Two smaller things came out of the same pass and are worth recording. Rate types are perfectly
+clean across the surface: all 60 Earn products report APY, all 84 pools report APR, with no
+exceptions, so the annual figures are compounded on one side and simple on the other. And
+`poolAddress` is present on 84 of 84 pools and 0 of 60 Earn products, which confirms on the full
+surface a claim this project previously got wrong and had to correct in public.
+
+One discrepancy is worth reporting upstream. The documented behaviour of `preview --action LP-ADD`
+against an `Earn` investment is error `40453`. Run against a Lista USDT product with
+`investType: Earn` and an empty `lpTokenList`, it instead returns success and builds a lending
+deposit, with `--priceRange` silently ignored. Reproduced three times out of three. An agent asking
+to open a liquidity position and receiving a lending deposit is not a difference it would notice.
+
 ## Attacking it on purpose
 
 `npm run redteam` hands a model every check in full, the live product list, and

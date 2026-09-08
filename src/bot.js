@@ -11,6 +11,7 @@ import { listInvestments, walletStatus, baw } from "./baw.js";
 import { preflight, screen, PASS, WARN, BLOCK, UNTESTED } from "./checks.js";
 import { stage, peek, commit } from "./execute.js";
 import { positions, formatEarned } from "./positions.js";
+import { classify } from "./refusal.js";
 
 // ---------------------------------------------------------------- config
 
@@ -451,6 +452,15 @@ async function showPositions(chat, userId) {
       (h.basis !== null ? `Deposited ${esc(String(h.basis))} across ${h.deposits} transfer${h.deposits === 1 ? "" : "s"}\n` : "") +
       earned);
 
+    // Binance reports positions for more protocols than it will build
+    // transactions for. Those extra ones still carry an investmentId, and it
+    // does not work. Better to say so than to offer a button that fails.
+    if (h.withdrawable === false) {
+      rows[rows.length - 1] +=
+        `\n_Binance shows this position but does not offer a withdrawal path for it, ` +
+        `so it has to be exited from the protocol directly\\._`;
+      continue;
+    }
     if (h.investmentId && h.tokenAddress) {
       // Withdrawing spends gas and moves money, so it goes through the same
       // staged nonce as a deposit rather than firing straight off a button.
@@ -500,17 +510,29 @@ async function doDeposit(chat, nonce, userId) {
   const mid = m?.result?.message_id;
 
   if (!r.ok) {
-    return edit(chat, mid,
-      `⛔️ *Did not go through\\.*\n\n${esc(r.error?.name ?? "")}: ${esc(r.error?.message ?? "")}`,
+    const c = classify(r.error);
+    return edit(chat, mid, `⛔️ *Did not go through\\.*\n\n${esc(c.title)}\n\n${esc(c.detail)}`,
       HOME_KEYS);
   }
   const tx = r.data?.txHash ?? "";
-  const done = r.intent.action === "redeem"
-    ? `Withdrew ${r.intent.ratio === 1 ? "all" : `${Math.round(r.intent.ratio * 100)}%`} of ` +
-      `*${esc(r.intent.label)}*\\.`
+  const isRedeem = r.intent.action === "redeem";
+  // A queued redemption is not a completed one. Calling it "withdrew" would
+  // leave someone waiting for money that needs a second transaction to arrive.
+  const delay = (r.data?.redeemDelayDays ?? []).filter(Boolean);
+  const wait = delay.length
+    ? `\n\n⏳ *${esc(delay[0] === delay[delay.length - 1] ? `${delay[0]} days` : `${delay[0]} to ${delay[delay.length - 1]} days`)}* ` +
+      `before this can be claimed\\. The funds are not in your wallet yet — come back after ` +
+      `the wait and claim them\\.`
+    : "";
+  const done = isRedeem
+    ? (delay.length
+        ? `Submitted a withdrawal of ${r.intent.ratio === 1 ? "all" : `${Math.round(r.intent.ratio * 100)}%`} ` +
+          `of *${esc(r.intent.label)}*\\.`
+        : `Withdrew ${r.intent.ratio === 1 ? "all" : `${Math.round(r.intent.ratio * 100)}%`} of ` +
+          `*${esc(r.intent.label)}*\\.`)
     : `Deposited *${esc(String(r.intent.amount))}* into *${esc(r.intent.label)}*\\.`;
   return edit(chat, mid,
-    `✅ *Sent\\.*\n\n${done}\n\n\`${esc(tx)}\`\n\n` +
+    `✅ *Sent\\.*\n\n${done}${wait}\n\n\`${esc(tx)}\`\n\n` +
     `[View on BscScan](https://bscscan.com/tx/${tx})\n\n` +
     `_Submitted, not yet confirmed\\. Balances take a moment to catch up\\._`,
     HOME_KEYS);

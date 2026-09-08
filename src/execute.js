@@ -115,6 +115,10 @@ export async function commit(nonce, ownerId) {
     amount: intent.action === "redeem" ? null : Number(intent.amount),
     ratio: intent.action === "redeem" ? Number(intent.ratio ?? 1) : null,
     txHash: parsed.data?.txHash ?? null,
+    // Only redeem carries this, and only for protocols that queue redemptions.
+    // An empty array means the funds land as soon as the tx confirms; anything
+    // else means a second step later, which the caller has to be told about.
+    redeemDelayDays: parsed.data?.redeemDelayDays ?? null,
   });
   return { ok: true, data: parsed.data, intent };
 }

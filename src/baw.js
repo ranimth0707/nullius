@@ -57,6 +57,16 @@ export const listEarn = (chainId = "56", size = 100) =>
 export const investmentInfo = (investmentId) =>
   baw(["defi", "investment-info", "--investmentId", investmentId]);
 
+/**
+ * Protocol detail: security score, six dimension scores, team, funding, FAQ.
+ *
+ * None of this appears in the investment listing, which is where a rate gets
+ * chosen. Binance scores every protocol it lists and then shows the rate on its
+ * own — the score is a separate call nobody makes.
+ */
+export const protocolInfo = (defiProtocolId) =>
+  baw(["defi", "protocol-info", "--defiProtocolId", defiProtocolId]);
+
 /** Simulate a deposit. Does NOT broadcast — this is what reveals `interactWith`. */
 export const previewDeposit = (investmentId, tokenAddress, amount, chainId = "56") =>
   baw(["defi", "preview", "--action", "deposit",

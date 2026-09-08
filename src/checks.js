@@ -4,9 +4,10 @@
 // permission. "We could not verify this" and "this is fine" are different answers,
 // and only one of them lets a deposit through.
 
-import { investmentInfo, previewDeposit, previewRedeem, previewLpAdd } from "./baw.js";
+import { investmentInfo, protocolInfo, previewDeposit, previewRedeem, previewLpAdd } from "./baw.js";
 import { identify, poolPair, mutability, controlChain } from "./chain.js";
 import { matchPool, apyHistory, normaliseSymbol } from "./llama.js";
+import { classify, FINDING } from "./refusal.js";
 
 export const BLOCK = "BLOCK";
 export const WARN = "WARN";
@@ -60,13 +61,12 @@ export async function checkListing(investmentId) {
 export async function checkSimulation(investmentId, tokenAddress, amount, chainId) {
   const r = await previewDeposit(investmentId, tokenAddress, amount, chainId);
   if (!r.ok) {
-    if (r.error?.name === "INSUFFICIENT_BALANCE") {
-      return result("simulate", UNTESTED, "Not simulated — asset not held",
-        "A deposit can only be simulated for an asset the wallet holds, so the contract " +
-        "behind this product was never revealed and could not be checked on-chain.", r.error);
-    }
-    return result("simulate", BLOCK, "Simulation refused",
-      `${r.error?.name}: ${r.error?.message}`, r.error);
+    // A refused preview is not automatically a finding. Most refusals are about
+    // the wallet, not the product; only a genuine rejection of the deposit is
+    // evidence against it. See refusal.js for how that line was drawn.
+    const c = classify(r.error);
+    const level = c.kind === FINDING ? BLOCK : UNTESTED;
+    return { ...result("simulate", level, c.title, c.detail, r.error), minimum: c.minimum ?? null };
   }
   const target = r.data?.feeAndContract?.interactWith?.address ?? null;
   if (!target) {
@@ -75,9 +75,104 @@ export async function checkSimulation(investmentId, tokenAddress, amount, chainI
       "nothing to verify against the chain.", r.data);
   }
   const fee = r.data?.feeAndContract?.estimatedNetworkFee;
+  // defi.md: "Surface ALL warnings to the user before they confirm." The field
+  // was empty in all six previews that succeeded during the survey, so this path
+  // is untested against real data — but a warning that arrives and is dropped is
+  // worse than one that never comes.
+  const warned = r.data?.warnings ?? [];
+  if (warned.length) {
+    return result("simulate", WARN, "Simulated, with warnings from the wallet",
+      `Would interact with ${target}. The wallet attached ${warned.length} warning` +
+      `${warned.length > 1 ? "s" : ""}: ` +
+      warned.map((w) => (typeof w === "string" ? w : (w?.message ?? JSON.stringify(w)))).join("; "),
+      r.data);
+  }
   return result("simulate", PASS, "Simulated without broadcasting",
     `Would interact with ${target} — network fee ≈ $${Number(fee?.valueUsd ?? 0).toFixed(4)}`,
     r.data);
+}
+
+/**
+ * 12. What does Binance itself think of this protocol?
+ *
+ * `protocol-info` carries a security score and a six-dimension breakdown, and
+ * none of it is anywhere near the screen where a rate gets picked. It is a
+ * second opinion from the venue that is listing the product, which is worth
+ * having precisely because it is not our opinion.
+ *
+ * A missing score is not a low one, and is not reported as though it were —
+ * but a protocol the venue has not scored is a different proposition from one
+ * it has scored well, and the difference should not be invisible.
+ */
+export async function checkProtocolScore(investment, info) {
+  const id = info?.defiProtocolId ?? investment?.defiProtocolId ?? null;
+  if (!id) return result("score", UNTESTED, "No protocol to look up",
+    "The product did not name a protocol, so no score could be fetched.");
+
+  const r = await protocolInfo(id);
+  if (!r.ok) {
+    const c = classify(r.error);
+    return result("score", UNTESTED, "Protocol score unavailable", c.detail, r.error);
+  }
+  const score = r.data?.securityScore;
+  const name = r.data?.protocolName ?? id;
+  if (score === null || score === undefined) {
+    return result("score", WARN, "Binance publishes no security score for this protocol",
+      `${name} is listed and investable, but carries no security score — while the other ` +
+      `protocols in the same list do. Nothing here says it is unsafe; it says the venue has ` +
+      `not published a judgement, and the listing looks identical either way.`, r.data);
+  }
+  const dims = r.data?.dimensionScores ?? {};
+  const weakest = Object.entries(dims)
+    .map(([k, v]) => [k, Number(v)])
+    .filter(([, v]) => Number.isFinite(v))
+    .sort((a, b) => a[1] - b[1])[0];
+  const readable = weakest
+    ? `${weakest[0].replace(/([A-Z])/g, " $1").toLowerCase().trim()} ${weakest[1].toFixed(0)}`
+    : null;
+
+  if (Number(score) < 70) {
+    return result("score", WARN, `Binance scores this protocol ${Number(score).toFixed(2)}`,
+      `${name} sits below 70 on Binance's own security score` +
+      (readable ? `, weakest on ${readable}` : "") + `.`, r.data);
+  }
+  return result("score", PASS, `Binance scores this protocol ${Number(score).toFixed(2)}`,
+    `${name} is scored ${Number(score).toFixed(2)} by the venue listing it` +
+    (readable ? `; its lowest dimension is ${readable}` : "") + `.`, r.data);
+}
+
+/**
+ * 11. Can the money come back out on demand?
+ *
+ * A rate is only half a product; the other half is how long it takes to leave.
+ * Some protocols hold a redemption for days before it can be claimed, and the
+ * listing shows the same shape of row either way — one number, no mention of a
+ * queue. The delay is only reported on the redeem build response, which cannot
+ * be reached before there is a position to redeem, so at deposit time the
+ * documented set is the only source there is.
+ *
+ * Named in products/defi-api/supported-chains.md, "Current Limitations".
+ */
+const DELAYED_EXIT = new Set(["helio", "astherus"]);
+
+export function checkExitDelay(investment, info) {
+  const id = info?.defiProtocolId ?? investment?.defiProtocolId ?? null;
+  const name = info?.protocolName ?? investment?.protocolName ?? "This protocol";
+  if (!id) {
+    return result("exitdelay", UNTESTED, "Exit speed unknown",
+      "The product did not report which protocol it belongs to, so the withdrawal delay " +
+      "could not be looked up.");
+  }
+  if (DELAYED_EXIT.has(id)) {
+    return result("exitdelay", WARN, "Withdrawal is not immediate",
+      `${name} holds redemptions for a waiting period before the funds can be claimed. ` +
+      `Withdrawing is two steps, not one: the redemption is submitted, and the money is ` +
+      `claimed after the wait. The exact number of days comes back on the redemption itself. ` +
+      `Nothing in the listing indicates this.`, { defiProtocolId: id });
+  }
+  return result("exitdelay", PASS, "Withdrawal is immediate",
+    `${name} credits redeemed funds as soon as the transaction confirms — no waiting period.`,
+    { defiProtocolId: id });
 }
 
 /** 3. Ask the chain what that contract actually is. */
@@ -256,8 +351,11 @@ export async function checkExit(investmentId, tokenAddress, chainId) {
       "Exit reached the position check (no position held yet), so the withdraw path is wired up.",
       r.error);
   }
-  return result("exit", BLOCK, "Exit path could not be confirmed",
-    `Simulating a withdrawal returned ${r.error?.name}: ${r.error?.message}`, r.error);
+  // A withdrawal that never got an answer is not a withdrawal that failed.
+  const c = classify(r.error);
+  return result("exit", c.kind === FINDING ? BLOCK : UNTESTED,
+    c.kind === FINDING ? "Exit path could not be confirmed" : "Exit path not confirmed",
+    c.detail, r.error);
 }
 
 /**
@@ -408,6 +506,7 @@ export async function screen({ investment, chainId = "56" }) {
   const listing = await checkListing(investment.investmentId);
   checks.push(listing);
   checks.push(checkRateType(investment, listing.evidence));
+  checks.push(checkExitDelay(investment, listing.evidence));
 
   const pool = listing.evidence?.poolAddress ?? null;
   const [identity, mut, hist] = await Promise.all([
@@ -419,6 +518,7 @@ export async function screen({ investment, chainId = "56" }) {
     pool ? checkMutability(pool) : Promise.resolve(null),
     checkHistory(investment),
   ]);
+  checks.push(await checkProtocolScore(investment, listing.evidence));
   checks.push(identity);
   if (mut) checks.push(mut);
   checks.push(hist);
@@ -456,6 +556,7 @@ export async function preflight({ investment, tokenAddress, amount, chainId = "5
 
   const isLp = (investment.investType ?? listing.evidence?.investType) === "LiquidityPool";
   checks.push(checkRateType(investment, listing.evidence));
+  checks.push(checkExitDelay(investment, listing.evidence));
 
   // A liquidity add is a different transaction from a deposit — `preview --action
   // deposit` is not valid for a pool — so LP products are simulated through
@@ -499,6 +600,7 @@ export async function preflight({ investment, tokenAddress, amount, chainId = "5
     checkExit(investmentId, token, chainId),
     checkHistory(investment),
   ]);
+  checks.push(await checkProtocolScore(investment, listing.evidence));
   checks.push(identity);
   if (target) checks.push(await checkMutability(target));
   if (sim.level === PASS && target) checks.push(checkValue(sim.evidence));

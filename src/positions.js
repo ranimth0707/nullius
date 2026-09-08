@@ -6,13 +6,36 @@
 // thing that can move money here, so it is the only thing that knows the cost
 // basis, and it writes one down every time it sends.
 
-import { baw } from "./baw.js";
+import { baw, INVEST_TYPES } from "./baw.js";
 import { ledger } from "./execute.js";
+
+/**
+ * The set of investment IDs that transactions can actually be built against.
+ *
+ * Position queries cover more protocols than the transaction API does. A
+ * position from one of the display-only protocols still comes back carrying
+ * `investmentIds`, and those IDs are not usable — a build against them fails.
+ * The docs are explicit that looking them up is the only way to tell the
+ * difference (products/defi-api/supported-chains.md, "Position Coverage"), so
+ * offering a withdraw button without doing that lookup is offering one that
+ * breaks on press.
+ */
+async function tradableIds(chainId) {
+  const ids = new Set();
+  for (const t of INVEST_TYPES) {
+    const r = await baw(["defi", "investment-list", "--investType", t,
+                         "--binanceChainId", String(chainId), "--size", "100"]);
+    if (!r.ok) return null; // Unknown is not the same as empty; say so upstream.
+    for (const p of r.data?.list ?? []) ids.add(p.investmentId);
+  }
+  return ids;
+}
 
 /** Flatten the four-level position response into something reportable. */
 export async function positions(chainId = "56") {
   const r = await baw(["defi", "position", "--binanceChainId", String(chainId)]);
   if (!r.ok) return { ok: false, error: r.error };
+  const tradable = await tradableIds(chainId);
 
   const spent = new Map();   // investmentId -> units deposited
   const sent = new Map();    // investmentId -> number of deposits
@@ -47,6 +70,11 @@ export async function positions(chainId = "56") {
             basis: basis ?? null,
             deposits: investmentId ? (sent.get(investmentId) ?? 0) : 0,
             earned: basis !== undefined ? now - basis : null,
+            // null means the lookup itself failed, which is not the same as
+            // "not withdrawable" and must not be shown as either.
+            withdrawable: tradable === null
+              ? null
+              : Boolean(investmentId && tradable.has(investmentId)),
           });
         }
       }
