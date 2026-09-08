@@ -20,8 +20,15 @@ export const PASS = "PASS";
  */
 export const UNTESTED = "UNTESTED";
 
-const result = (id, level, title, detail, evidence = null) =>
-  ({ id, level, title, detail, evidence });
+/**
+ * `consequence` is the check in the reader's terms: what could actually happen
+ * to their money if this finding matters. The rest of a result explains what
+ * was observed, which turns out not to be the same thing as explaining what it
+ * means. A report can be entirely accurate and still leave someone unable to
+ * answer the only question they came with.
+ */
+const result = (id, level, title, detail, evidence = null, consequence = null) =>
+  ({ id, level, title, detail, evidence, consequence });
 
 const alnum = (s) => String(s ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
 
@@ -175,7 +182,9 @@ export function checkExitDelay(investment, info) {
       `${name} holds redemptions for a waiting period before the funds can be claimed. ` +
       `Withdrawing is two steps, not one: the redemption is submitted, and the money is ` +
       `claimed after the wait. The exact number of days comes back on the redemption itself. ` +
-      `Nothing in the listing indicates this.`, { defiProtocolId: id });
+      `Nothing in the listing indicates this.`, { defiProtocolId: id },
+      "If the market turns, or you simply need the cash, you cannot leave on the day you " +
+      "decide to. You are committed for the length of that wait.");
   }
   return result("exitdelay", PASS, "Withdrawal is immediate",
     `${name} credits redeemed funds as soon as the transaction confirms — no waiting period.`,
@@ -251,7 +260,13 @@ export async function checkIdentity(target, claim) {
       `The listing says ${claim.protocolName}. The contract calls itself ${seen}. That is the ` +
       `pattern of a curated vault, where the listing names the lending protocol and the contract ` +
       `names the curator who actually sets the risk policy. Your money answers to the second one, ` +
-      `and the listing never mentions them.`, onchain);
+      `and the listing never mentions them.`, onchain,
+      `Your deposit does not sit still. It is lent out, and someone decides what it may be lent ` +
+      `against, at what ratio, and priced by which oracle. Here that someone is the curator, not ` +
+      `${claim.protocolName}. If those limits are set loosely and borrowers default while their ` +
+      `collateral is falling, the vault takes the loss and your deposit does not come back whole. ` +
+      `Any score or reputation you are relying on belongs to ${claim.protocolName}, and does not ` +
+      `cover the curator's decisions.`);
   }
   if (!assetOk) {
     return result("identity", WARN, "Asset naming differs on-chain",
@@ -307,12 +322,18 @@ export async function checkMutability(target) {
     return result("mutability", WARN, "Code can be replaced, but not instantly",
       `${target} is a proxy. Upgrade authority ends at a timelock with a ` +
       `${end.minDelaySeconds}s delay, so a change is visible before it takes effect.${trail}`,
-      { ...m, chain });
+      { ...m, chain },
+      "The code holding your money can still be replaced, but not without warning. The delay is " +
+      "the window in which you could get out first, and it only helps if someone is watching.");
   }
   return result("mutability", WARN, "Code can be replaced",
     `${target} forwards to ${m.implementation ?? "a beacon-supplied implementation"}, and that ` +
     `target can be changed. What was confirmed above is what runs today, not necessarily what ` +
-    `runs when the money comes back out.${trail}`, { ...m, chain });
+    `runs when the money comes back out.${trail}`, { ...m, chain },
+    "Whoever holds that key can swap the code holding your money, without asking and without " +
+    "warning, including for code that moves it somewhere else. Nothing here says they will. " +
+    "It says your deposit is protected by trust in that keyholder rather than by the code " +
+    "just verified, and that this is the mechanism behind several of the largest losses in DeFi.");
 }
 
 /** 5. Does the simulated swap of value conserve value? */

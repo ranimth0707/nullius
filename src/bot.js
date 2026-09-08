@@ -210,7 +210,36 @@ function renderVerdict(label, v) {
       ? "\n\nSomething failed outright\\. I would not put money here\\."
       : `\n\nNothing failed, but ${gaps === 1 ? "one check" : `${gaps} checks`} could not be ` +
         `completed at all\\. Not being able to confirm something is not permission\\.`;
-  return `${head}\n\n${body}${tail}`;
+  return `${head}\n\n${body}${tail}${consequences(v)}`;
+}
+
+/**
+ * The part the check list does not answer.
+ *
+ * Eleven accurate findings and a tick at the bottom still leave someone asking
+ * whether it is safe, which is the only question they came with. Listing what
+ * was observed is not the same as saying what it would cost them, so the
+ * warnings get restated in those terms.
+ *
+ * This deliberately stops short of a recommendation. What has to go wrong is a
+ * fact about the product. Whether that is worth 5.46% is not.
+ */
+function consequences(v) {
+  const risks = v.checks.filter((c) => c.consequence && (c.level === WARN || c.level === BLOCK));
+  if (!risks.length) return "";
+
+  const body = risks
+    .map((c) => `*${esc(c.title)}*\n${esc(c.consequence)}`)
+    .join("\n\n");
+
+  return `\n\n\\-\\-\\-\n\n*So is it safe?*\n\n` +
+    `Everything above is about identity: whether this contract is what the listing says it is\\. ` +
+    `It is\\. What none of it can tell you is whether the people who control it will behave, and ` +
+    `that is where the money is actually at risk\\.\n\n` +
+    `${risks.length === 1 ? "One finding" : `${risks.length} findings`} here ` +
+    `${risks.length === 1 ? "depends" : "depend"} on people rather than code\\.\n\n${body}\n\n` +
+    `_I cannot tell you whether this is a good investment, and I am not qualified to\\. What I can ` +
+    `do is put what would have to go wrong in front of you before you decide, instead of after\\._`;
 }
 
 // ---------------------------------------------------------------- model
