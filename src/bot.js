@@ -75,10 +75,10 @@ const BACK = [{ text: "◀️ Back", callback_data: "home" }];
 // demonstration rather than a feature, so it lives on /compare and not here.
 const HOME_KEYS = {
   inline_keyboard: [
-    [{ text: "💰 Put my money to work", callback_data: "work" }],
-    [{ text: "👛 My balance", callback_data: "bal" }],
-    [{ text: "📊 What I'm holding", callback_data: "pos" }],
     [{ text: "❓ How this works", callback_data: "help" }],
+    [{ text: "👛 My balance", callback_data: "bal" }],
+    [{ text: "💰 Put my money to work", callback_data: "work" }],
+    [{ text: "📊 What I'm holding", callback_data: "pos" }],
   ],
 };
 
@@ -170,8 +170,8 @@ async function homeText() {
     `that\\. The listing never says which contract you are actually entering\\.\n\n` +
     `I find that contract before anything is signed, ask the chain what it really is, and stop ` +
     `when the answer does not match\\.\n\n` +
-    `👇 Tap *Put my money to work*\\. I will find something, check it against the chain, ` +
-    `and ask you before anything is sent\\.`;
+    `New here? Start with *How this works*\\. Ready to go? *Put my money to work* finds ` +
+    `something, checks it against the chain, and asks you before anything is sent\\.`;
 }
 
 const HELP =
