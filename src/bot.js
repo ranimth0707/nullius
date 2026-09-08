@@ -82,8 +82,53 @@ const HOME_KEYS = {
 
 const NATIVE_BNB = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
-/** Deposit sizes offered once a product clears, in the asset it is denominated in. */
-const SIZES = [0.005, 0.01, 0.02];
+/**
+ * Deposit sizes, as a share of what the wallet actually holds.
+ *
+ * These used to be three fixed numbers, which meant offering to deposit 0.005
+ * USDT against a balance of ten dollars. Worse than merely silly: at that size
+ * the value-conservation and pool-capacity checks both round to zero and stop
+ * testing anything, so the report came back clean partly because it had nothing
+ * to weigh.
+ */
+const PROPORTIONS = [[0.25, "25%"], [0.5, "50%"], [1, "100%"]];
+
+/**
+ * BNB left behind to pay for the transaction.
+ *
+ * Gas is paid in BNB no matter which asset is being deposited, so depositing
+ * every last BNB leaves nothing to pay for the deposit itself. A deposit costs
+ * roughly 0.00004 BNB at current prices; this reserves enough for that and the
+ * withdrawal that follows it, several times over.
+ */
+const GAS_RESERVE_BNB = 0.002;
+
+const normSym = (s) =>
+  String(s ?? "").toUpperCase().replace(/^BSC_/, "").replace(/^W(?=BNB$|ETH$)/, "");
+
+/** What the wallet can commit of one asset, after leaving gas behind. */
+async function spendable(symbol) {
+  const b = await baw(["wallet", "balance", "--binanceChainId", "56"]);
+  if (!b.ok || !Array.isArray(b.data)) return null;
+  const row = b.data.find((t) => normSym(t.symbol) === normSym(symbol));
+  if (!row) return null;
+  const held = Number(row.balance);
+  const native = normSym(row.symbol) === "BNB";
+  return {
+    symbol: row.symbol,
+    held,
+    usable: native ? Math.max(0, held - GAS_RESERVE_BNB) : held,
+    price: Number(row.price ?? 0),
+    native,
+  };
+}
+
+/** Trim to something the wallet will accept without rounding past the balance. */
+const trim = (n) => Number(Math.floor(n * 1e6) / 1e6);
+
+/** Waiting on someone to type an amount: userId -> what they are sizing. */
+const awaitingAmount = new Map();
+const AMOUNT_TTL_MS = 5 * 60_000;
 
 // ---------------------------------------------------------------- screens
 
@@ -274,9 +319,20 @@ async function putToWork(chat, userId) {
   ]);
   if (!items) return send(chat, "Could not reach the Binance listing right now\\.", HOME_KEYS);
 
-  const held = new Set((bal.ok ? bal.data ?? [] : []).map((t) => String(t.symbol).toUpperCase()));
-  const norm = (s) => String(s).toUpperCase().replace(/^BSC_/, "").replace(/^W(?=BNB$|ETH$)/, "");
-  const candidates = items.filter((i) => [...held].some((h) => norm(h) === norm(i.investmentName)));
+  // Keep the balance itself, not just which symbols exist. The check has to run
+  // at a size that resembles the deposit being considered, or the value and
+  // capacity tests round to zero and confirm nothing.
+  const rows = bal.ok ? bal.data ?? [] : [];
+  const usableOf = (sym) => {
+    const row = rows.find((t) => normSym(t.symbol) === normSym(sym));
+    if (!row) return 0;
+    const n = Number(row.balance);
+    return normSym(row.symbol) === "BNB" ? Math.max(0, n - GAS_RESERVE_BNB) : n;
+  };
+  const candidates = items
+    .filter((i) => usableOf(i.investmentName) > 0)
+    .map((i) => ({ inv: i, test: trim(usableOf(i.investmentName) * 0.25) }))
+    .filter((c) => c.test > 0);
 
   if (!candidates.length) {
     return send(chat,
@@ -292,8 +348,8 @@ async function putToWork(chat, userId) {
   // Everything gets checked, not just up to the first pass. Stopping early meant
   // you were handed one answer with no way to see the others or why they lost.
   // Run them together, since each is mostly waiting on the network.
-  const checked = await Promise.all(candidates.map(async (inv) => ({
-    inv, v: await preflight({ investment: inv, amount: SIZES[0], chainId: "56" }),
+  const checked = await Promise.all(candidates.map(async ({ inv, test }) => ({
+    inv, v: await preflight({ investment: inv, amount: test, chainId: "56" }),
   })));
 
   const cleared = checked.filter((c) => c.v.verdict === "GO");
@@ -323,7 +379,9 @@ async function putToWork(chat, userId) {
     return [{
       text: `${inv.investmentName} · ${inv.protocolName} · ${inv.apyDisplay}`,
       callback_data: `pick:${stage({ investmentId: inv.investmentId, tokenAddress: token,
-        amount: SIZES[0], label: `${inv.protocolName} ${inv.investmentName} @ ${inv.apyDisplay}`,
+        // A placeholder only. showPick sizes it against the balance before
+        // anything can be confirmed.
+        amount: 0, label: `${inv.protocolName} ${inv.investmentName} @ ${inv.apyDisplay}`,
         ownerId: userId })}`,
     }];
   });
@@ -345,19 +403,107 @@ async function showPick(chat, nonce, userId) {
   const inv = items?.find((x) => x.investmentId === i.investmentId);
   if (!inv) return send(chat, "That product has left the listing\\.", HOME_KEYS);
 
-  const v = await preflight({ investment: inv, amount: SIZES[0], chainId: "56" });
-  const keys = {
-    inline_keyboard: [
-      SIZES.map((s) => ({
-        text: `Deposit ${s} ${inv.investmentName}`,
-        callback_data: `stage:${stage({ investmentId: i.investmentId, tokenAddress: i.tokenAddress,
-          amount: s, label: i.label, ownerId: userId })}`,
-      })),
-      [{ text: "◀️ Back to the list", callback_data: "work" }],
-    ],
-  };
-  return send(chat, `${renderVerdict(i.label, v)}\n\n` +
-    `_Pick a size\\. This one actually spends money\\._`, keys);
+  const bal = await spendable(inv.investmentName);
+  if (!bal || bal.usable <= 0) {
+    return send(chat,
+      `You no longer hold enough ${esc(inv.investmentName)} to deposit\\.` +
+      (bal?.native ? `\n\n_${GAS_RESERVE_BNB} BNB is held back for gas, and gas has to come ` +
+        `from somewhere\\._` : ""), HOME_KEYS);
+  }
+
+  // Check at the size actually on offer, not at a token amount. A check run on
+  // 0.005 of anything tells you almost nothing about depositing a quarter of
+  // the wallet.
+  const v = await preflight({ investment: inv, amount: trim(bal.usable * 0.25), chainId: "56" });
+
+  // A product can carry a minimum the listing never mentions. If the simulation
+  // disclosed one, the proportions that fall under it are not offered.
+  const min = v.checks.find((c) => c.minimum)?.minimum ?? 0;
+
+  const rows = [];
+  const offered = PROPORTIONS
+    .map(([frac, tag]) => ({ frac, tag, amount: trim(bal.usable * frac) }))
+    .filter((o) => o.amount > 0 && o.amount >= min);
+
+  for (const o of offered) {
+    const usd = o.amount * bal.price;
+    rows.push([{
+      text: `${o.tag} · ${o.amount} ${inv.investmentName}${usd ? ` (≈$${usd.toFixed(2)})` : ""}`,
+      callback_data: `stage:${stage({ investmentId: i.investmentId, tokenAddress: i.tokenAddress,
+        amount: o.amount, label: i.label, ownerId: userId })}`,
+    }]);
+  }
+  rows.push([{ text: "✏️ Enter my own amount", callback_data: `amt:${nonce}` }]);
+  rows.push([{ text: "◀️ Back to the list", callback_data: "work" }]);
+
+  const shortfall = !offered.length
+    ? `\n\n⛔️ *This product will not take less than ${esc(String(min))} ${esc(inv.investmentName)}, ` +
+      `and you have ${esc(String(trim(bal.usable)))}\\.*`
+    : "";
+
+  return send(chat,
+    `${renderVerdict(i.label, v)}\n\n` +
+    `You hold *${esc(String(trim(bal.held)))} ${esc(inv.investmentName)}*` +
+    (bal.native ? `, of which ${esc(String(trim(bal.usable)))} can be deposited once gas is set aside`
+                : "") +
+    `\\.${min ? ` Minimum deposit is ${esc(String(min))}\\.` : ""}${shortfall}\n\n` +
+    `_Pick a size\\. This one actually spends money\\._`,
+    { inline_keyboard: rows });
+}
+
+/** Ask for a typed amount, and remember what it is for. */
+async function askAmount(chat, nonce, userId) {
+  const i = peek(nonce);
+  if (!i || String(i.ownerId) !== String(userId)) {
+    return send(chat, "That has expired\\. Run the check again\\.", HOME_KEYS);
+  }
+  // The label is "Protocol Asset @ rate" and protocol names contain spaces, so
+  // the asset is read back off the listing rather than parsed out of the label.
+  const items = await products("Earn");
+  const inv = items?.find((x) => x.investmentId === i.investmentId);
+  if (!inv) return send(chat, "That product has left the listing\\.", HOME_KEYS);
+
+  const bal = await spendable(inv.investmentName);
+  awaitingAmount.set(String(userId), {
+    investmentId: i.investmentId, tokenAddress: i.tokenAddress, label: i.label,
+    max: bal?.usable ?? null, symbol: bal?.symbol ?? "", price: bal?.price ?? 0,
+    at: Date.now(),
+  });
+  return send(chat,
+    `How much do you want to deposit into *${esc(i.label)}*?\n\n` +
+    (bal ? `You can commit up to *${esc(String(trim(bal.usable)))} ${esc(bal.symbol)}*\\.\n\n` : "") +
+    `_Reply with just the number, like_ \`2.5\`\\.`,
+    { inline_keyboard: [[{ text: "◀️ Cancel", callback_data: "work" }]] });
+}
+
+/**
+ * Turn a typed number into a staged deposit.
+ *
+ * Returns false when nothing was pending, so ordinary messages still fall
+ * through to the rest of the handler.
+ */
+async function takeAmount(chat, userId, text) {
+  const p = awaitingAmount.get(String(userId));
+  if (!p) return false;
+  if (Date.now() - p.at > AMOUNT_TTL_MS) { awaitingAmount.delete(String(userId)); return false; }
+
+  const n = Number(String(text).trim().replace(/[, ]/g, "").replace(/[^\d.]/g, ""));
+  if (!Number.isFinite(n) || n <= 0) {
+    await send(chat, `That is not an amount I can use\\. Reply with just a number, like \`2.5\`\\.`);
+    return true;
+  }
+  if (p.max !== null && n > p.max) {
+    await send(chat,
+      `You only have *${esc(String(trim(p.max)))} ${esc(p.symbol)}* to commit\\. Try a smaller number\\.`);
+    return true;
+  }
+  awaitingAmount.delete(String(userId));
+
+  const amount = trim(n);
+  const nonce = stage({ investmentId: p.investmentId, tokenAddress: p.tokenAddress,
+    amount, label: p.label, ownerId: userId });
+  await confirmStage(chat, nonce, userId);
+  return true;
 }
 
 /** What is held, what it cost, what it has made, and the way out. */
@@ -511,6 +657,7 @@ async function onCallback(q) {
   if (d === "work") return putToWork(chat, userId);
   if (d === "pos") return showPositions(chat, userId);
   if (d.startsWith("pick:")) return showPick(chat, d.slice(5), userId);
+  if (d.startsWith("amt:")) return askAmount(chat, d.slice(4), userId);
   if (d.startsWith("stage:")) return confirmStage(chat, d.slice(6), userId);
   if (d.startsWith("go:")) return doDeposit(chat, d.slice(3), userId);
   if (d.startsWith("list:")) return showList(chat, d.slice(5));
@@ -534,6 +681,11 @@ async function handle(msg) {
       `This bot is not open to the public\\.\n\nYour Telegram id is \`${esc(from)}\`\\. ` +
       `Add it to *ALLOWED\\_USER\\_IDS* in \`.env\` and restart\\.`);
   }
+
+  // Someone asked to type an amount, so a bare number is an amount and not a
+  // half-finished sentence to route through the model. Commands still escape,
+  // so nobody gets stuck in here.
+  if (!text.startsWith("/") && await takeAmount(chat, from, text)) return;
 
   if (/^\/(start|home)\b/.test(text) || !text.startsWith("/") && text.length < 3) return showHome(chat);
   if (/^\/help\b/.test(text)) return send(chat, HELP, { inline_keyboard: [BACK] });

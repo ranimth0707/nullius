@@ -25,6 +25,13 @@ const result = (id, level, title, detail, evidence = null) =>
 
 const alnum = (s) => String(s ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
 
+/** 1st, 2nd, 3rd, 4th. Everything in this report is read by a person. */
+export function ordinal(n) {
+  const tens = n % 100;
+  if (tens >= 11 && tens <= 13) return `${n}th`;
+  return `${n}${["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
+}
+
 /** Distinctive word from a protocol name, used to look for it on-chain. */
 function protocolToken(protocolName) {
   const first = String(protocolName ?? "").trim().split(/\s+/)[0] ?? "";
@@ -398,7 +405,7 @@ export async function checkHistory(investment) {
       `baseline are usually temporary incentives or a market under stress.`, ev);
   }
   return result("history", PASS, "Rate is normal for this pool",
-    `${apy.toFixed(2)}% sits at the ${(h.percentile * 100).toFixed(0)}th percentile of ` +
+    `${apy.toFixed(2)}% sits at the ${ordinal(Math.round(h.percentile * 100))} percentile of ` +
     `${h.samples} days of record (median ${h.median.toFixed(2)}%) since ${h.from}.`, ev);
 }
 
