@@ -8,6 +8,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { listInvestments, walletStatus, baw } from "./baw.js";
 import { preflight, screen, PASS, WARN, BLOCK, UNTESTED } from "./checks.js";
 import { stage, peek, commit } from "./execute.js";
+import { positions, formatEarned } from "./positions.js";
 
 // ---------------------------------------------------------------- config
 
@@ -71,6 +72,7 @@ const BACK = [{ text: "◀️ Back", callback_data: "home" }];
 const HOME_KEYS = {
   inline_keyboard: [
     [{ text: "💰 Put my money to work", callback_data: "work" }],
+    [{ text: "📊 What I'm holding", callback_data: "pos" }],
     [{ text: "🔍 Check something before I deposit elsewhere", callback_data: "ok:LiquidityPool" }],
     [{ text: "❓ How this works", callback_data: "help" }],
   ],
@@ -114,7 +116,7 @@ const HELP =
   `back what it calls itself\\.\n\n` +
   `*3\\. I compare\\.* Listing says one thing, chain says another, I stop\\. Chain says nothing ` +
   `at all, I also stop\\.\n\n` +
-  `Nine checks run in total, covering delisted products, hidden second assets, fee rates dressed ` +
+  `Ten checks run in total, covering delisted products, contracts whose code one key can replace, ` +
   `up as yields, missing exits, and pool sizes too small to take your money\\.\n\n` +
   `*Three answers, not two\\.* Pass, fail, or no evidence either way\\. The third one still ` +
   `refuses\\. Not being able to verify something is not permission to proceed\\.\n\n` +
@@ -397,18 +399,65 @@ async function putToWork(chat, userId) {
     `_Pick a size and I will send it\\. This one actually spends money\\._`, keys);
 }
 
+/** What is held, what it cost, what it has made, and the way out. */
+async function showPositions(chat, userId) {
+  await typing(chat);
+  const r = await positions("56");
+  if (!r.ok) return send(chat, "Could not read your positions right now\\.", HOME_KEYS);
+  if (!r.held.length) {
+    return send(chat, `You hold nothing on this chain yet\\.`, HOME_KEYS);
+  }
+
+  const rows = [];
+  const keys = [];
+  for (const h of r.held) {
+    const earned = h.earned === null
+      ? `_No cost basis recorded, so I will not guess what it earned\\._`
+      : `Earned: ${esc(formatEarned(h.earned, h.asset, h.price))}`;
+    rows.push(
+      `*${esc(h.protocol)} ${esc(h.asset)}*\n` +
+      `Holding ${esc(String(h.amount))} ${esc(h.asset)} · $${esc(h.valueUsd.toFixed(2))}\n` +
+      (h.basis !== null ? `Deposited ${esc(String(h.basis))} across ${h.deposits} transfer${h.deposits === 1 ? "" : "s"}\n` : "") +
+      earned);
+
+    if (h.investmentId && h.tokenAddress) {
+      // Withdrawing spends gas and moves money, so it goes through the same
+      // staged nonce as a deposit rather than firing straight off a button.
+      for (const [pct, ratio] of [["Withdraw half", 0.5], ["Withdraw all", 1]]) {
+        keys.push([{
+          text: `${pct} · ${h.asset}`,
+          callback_data: `stage:${stage({
+            action: "redeem", investmentId: h.investmentId, tokenAddress: h.tokenAddress,
+            ratio, label: `${h.protocol} ${h.asset}`, ownerId: userId })}`,
+        }]);
+      }
+    }
+  }
+  keys.push(BACK);
+
+  return send(chat,
+    `*Total on BNB Smart Chain: $${esc(r.totalUsd.toFixed(2))}*\n\n${rows.join("\n\n")}\n\n` +
+    `_Earnings are the position now, minus what I sent\\. Lending accrues slowly, so early ` +
+    `figures are small rather than wrong\\._`, { inline_keyboard: keys });
+}
+
 /** Show exactly what is about to happen, then require one more tap. */
 async function confirmStage(chat, nonce, userId) {
   const i = peek(nonce);
   if (!i || String(i.ownerId) !== String(userId)) {
     return send(chat, "That confirmation has expired\\. Run the check again\\.", HOME_KEYS);
   }
+  const isRedeem = i.action === "redeem";
+  const what = isRedeem
+    ? `Withdrawing *${i.ratio === 1 ? "all" : `${Math.round(i.ratio * 100)}%`}* of your position ` +
+      `in *${esc(i.label)}*\\.`
+    : `Depositing *${esc(String(i.amount))}* into *${esc(i.label)}*\\.`;
+
   return send(chat,
-    `⚠️ *About to spend real money\\.*\n\n` +
-    `Depositing *${esc(String(i.amount))}* into *${esc(i.label)}*\\.\n\n` +
+    `⚠️ *About to move real money\\.*\n\n${what}\n\n` +
     `This broadcasts a transaction on BNB Smart Chain and cannot be undone from here\\.`,
     { inline_keyboard: [
-      [{ text: "✅ Yes, deposit now", callback_data: `go:${nonce}` }],
+      [{ text: isRedeem ? "✅ Yes, withdraw now" : "✅ Yes, deposit now", callback_data: `go:${nonce}` }],
       [{ text: "✖️ Cancel", callback_data: "home" }],
     ] });
 }
@@ -425,11 +474,14 @@ async function doDeposit(chat, nonce, userId) {
       HOME_KEYS);
   }
   const tx = r.data?.txHash ?? "";
+  const done = r.intent.action === "redeem"
+    ? `Withdrew ${r.intent.ratio === 1 ? "all" : `${Math.round(r.intent.ratio * 100)}%`} of ` +
+      `*${esc(r.intent.label)}*\\.`
+    : `Deposited *${esc(String(r.intent.amount))}* into *${esc(r.intent.label)}*\\.`;
   return edit(chat, mid,
-    `✅ *Sent\\.*\n\nDeposited *${esc(String(r.intent.amount))}* into *${esc(r.intent.label)}*\\.\n\n` +
-    `\`${esc(tx)}\`\n\n` +
+    `✅ *Sent\\.*\n\n${done}\n\n\`${esc(tx)}\`\n\n` +
     `[View on BscScan](https://bscscan.com/tx/${tx})\n\n` +
-    `_Submitted, not yet confirmed\\. The destination should match the contract I verified above\\._`,
+    `_Submitted, not yet confirmed\\. Balances take a moment to catch up\\._`,
     HOME_KEYS);
 }
 
@@ -475,6 +527,7 @@ async function onCallback(q) {
   if (d === "help") return send(chat, HELP, { inline_keyboard: [BACK] });
   if (d === "compare") return runCompare(chat);
   if (d === "work") return putToWork(chat, userId);
+  if (d === "pos") return showPositions(chat, userId);
   if (d.startsWith("stage:")) return confirmStage(chat, d.slice(6), userId);
   if (d.startsWith("go:")) return doDeposit(chat, d.slice(3), userId);
   if (d.startsWith("list:")) return showList(chat, d.slice(5));
@@ -503,6 +556,8 @@ async function handle(msg) {
   if (/^\/(start|home)\b/.test(text) || !text.startsWith("/") && text.length < 3) return showHome(chat);
   if (/^\/help\b/.test(text)) return send(chat, HELP, { inline_keyboard: [BACK] });
   if (/^\/compare\b/.test(text)) return runCompare(chat);
+  if (/^\/positions\b/.test(text) || /\b(position|holding|earned|profit)\b/i.test(text))
+    return showPositions(chat, msg.from?.id);
   if (/^\/work\b/.test(text) || /\b(deposit|invest|put .*(money|bnb).*work)\b/i.test(text))
     return putToWork(chat, msg.from?.id);
   if (/^\/earn\b/.test(text)) return showList(chat, "Earn");
