@@ -61,6 +61,12 @@ const CHECKS_DESCRIBED = `
    percentile. Warning only. Never blocks.
 10. Capacity. Blocks when the deposit would exceed 5% of independently reported
     pool size. Falls back to a warning when pool size is unknown.
+11. Exit delay. Warns when the protocol is one Binance names as able to queue a
+    redemption. Cannot be established per product before a deposit exists, so a
+    delay actually observed on a past withdrawal overrides it. Warning only.
+12. Protocol score. Reads securityScore and the six dimension scores from
+    protocol-info. Warns below 70, and warns when the venue publishes no score
+    at all. Warning only. Never blocks.
 
 A verdict is VERIFIED only when nothing blocks and nothing is untested.
 Warnings never prevent a verdict.

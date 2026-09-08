@@ -37,12 +37,12 @@ function printVerdict(v) {
   const parts = [];
   if (v.blocked) parts.push(`${v.blocked} failed`);
   if (v.untested) parts.push(`${v.untested} untested`);
-  if (v.warned) parts.push(`${v.warned} warning`);
+  if (v.warned) parts.push(`${v.warned} warning${v.warned === 1 ? "" : "s"}`);
   console.log(`\n  ${colour}${C.bold}${v.verdict}${C.reset}  ${C.dim}${parts.join(", ") || "all clear"}${C.reset}`);
   if (!ok) {
     const why = v.reason === "failed"
       ? "A check failed outright."
-      : "Nothing failed — but the position could not be verified, and that is not permission.";
+      : "Nothing failed, but the position could not be verified, and that is not permission.";
     console.log(`  ${C.dim}${why}${C.reset}`);
   }
 }

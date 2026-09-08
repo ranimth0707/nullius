@@ -67,7 +67,10 @@ export async function checkListing(investmentId) {
     // new deposit / lp-add requests". The rule exists; nothing enforces it.
     return result("listing", BLOCK, "Product is delisted",
       `${protocolName} ${investmentName} still appears in the listing at ${apyDisplay}, ` +
-      `but no longer accepts deposits.`, r.data);
+      `but no longer accepts deposits.`, r.data,
+      risk("This product is closed. Money put in cannot be put in.",
+        "It still appears in the listing at its old rate, which is how an agent picking by rate " +
+        "would still pick it, but deposits are no longer accepted."));
   }
   if (investable !== true) {
     return result("listing", BLOCK, "Deposit status unknown",
@@ -288,7 +291,11 @@ export async function checkIdentity(target, claim) {
   if (!assetOk && !protoOk) {
     return result("identity", BLOCK, "Contract holds a different asset",
       `The listing advertises ${claim.protocolName} ${claim.investmentName}, but the contract ` +
-      `the deposit would enter calls itself ${seen}, which matches neither.`, onchain);
+      `the deposit would enter calls itself ${seen}, which matches neither.`, onchain,
+      risk("The contract you would be paying is holding a different asset than advertised.",
+        "The listing and the chain disagree about what this product even is. Whatever the reason, " +
+        "sending money to a contract that does not match what was advertised is not something " +
+        "worth doing to find out."));
   }
 
   // A different protocol name usually means a curated vault: the listing names
@@ -315,7 +322,10 @@ export async function checkIdentity(target, claim) {
   if (!assetOk) {
     return result("identity", WARN, "Asset naming differs on-chain",
       `Protocol confirmed as ${claim.protocolName}, but the contract calls the asset ${seen} ` +
-      `rather than ${claim.investmentName}. Wrapper naming often differs; worth an eye.`, onchain);
+      `rather than ${claim.investmentName}. Wrapper naming often differs; worth an eye.`, onchain,
+      risk("Right protocol, but the asset goes by a different name on-chain.",
+        "The protocol matches. The asset is named differently on the contract than in the " +
+        "listing, which is usually just wrapper naming and occasionally is not."));
   }
   return result("identity", PASS, "Contract confirmed on-chain",
     `Chain reports ${seen} — consistent with ${claim.protocolName} ${claim.investmentName}.`,
@@ -360,7 +370,12 @@ export async function checkMutability(target) {
     return result("mutability", BLOCK, "One key can replace this code",
       `${target} is a proxy, and upgrade authority ends at ${end.address}, an ordinary wallet ` +
       `rather than a timelock or multisig. Whoever holds that key can swap the code behind this ` +
-      `address without the address changing.${trail}`, { ...m, chain });
+      `address without the address changing.${trail}`, { ...m, chain },
+      risk("A single ordinary wallet can replace the code holding your money, at any moment.",
+        "Upgrade authority ends at one private key rather than a timelock or a multisig. Whoever " +
+        "holds it can swap the code behind this address, without the address changing, without " +
+        "notice, and with nothing to stop them. Everything verified above describes only what " +
+        "runs until they decide otherwise."));
   }
   if (end?.kind === "timelock") {
     return result("mutability", WARN, "Code can be replaced, but not instantly",
@@ -400,7 +415,10 @@ export function checkValue(preview) {
   if (slipPct > 1) {
     return result("value", BLOCK, "Value lost in the simulated deposit",
       `Sending $${out.toFixed(2)} would return a position worth $${into.toFixed(2)} ` +
-      `(${slipPct.toFixed(2)}% lost before fees).`);
+      `(${slipPct.toFixed(2)}% lost before fees).`, null,
+      risk("You would be worth measurably less the instant the deposit lands.",
+        "The simulation returns a position worth less than what goes in, before any fee is " +
+        "charged. Whatever the rate promises, it starts from behind."));
   }
   return result("value", PASS, "Value is conserved",
     `$${out.toFixed(2)} in → $${into.toFixed(2)} of position (${slipPct >= 0 ? "" : "+"}` +
@@ -529,7 +547,10 @@ export async function checkPairing(investment, tokenAddress, amount, chainId) {
   if (debits.length > 1) {
     const list = debits.map((d) => `${Math.abs(Number(d.amount))} ${d.tokenSymbol}`).join(" and ");
     return result("pairing", WARN, "Deposit draws on two assets",
-      `The command names one token, but the simulation debits ${list}.`, r.data);
+      `The command names one token, but the simulation debits ${list}.`, r.data,
+      risk("Two assets leave your wallet, not the one you named.",
+        "One token was asked for. The simulation shows a second one being spent as well, which " +
+        "the command never mentioned."));
   }
   return result("pairing", PASS, "Only the named asset is drawn",
     "The simulation debits nothing beyond the token given.", r.data);
@@ -574,7 +595,10 @@ export function checkCapacity(depositUsd, poolTvlUsd) {
   if (share > 0.05) {
     return result("capacity", BLOCK, "Deposit is too large for this pool",
       `$${depositUsd.toFixed(2)} would be ${pct}% of a $${Math.round(poolTvlUsd).toLocaleString("en-US")} ` +
-      `pool. A share this size moves the rate it was chosen for.`);
+      `pool. A share this size moves the rate it was chosen for.`, null,
+      risk("Your deposit is big enough to push down the rate you came for.",
+        "A deposit this large relative to the pool changes the yield by arriving. The advertised " +
+        "rate is the rate before your money is in it, not after."));
   }
   return result("capacity", PASS, "Pool can absorb this deposit",
     `$${depositUsd.toFixed(2)} is ${pct}% of a $${Math.round(poolTvlUsd).toLocaleString("en-US")} pool.`);
@@ -699,10 +723,15 @@ export async function preflight({ investment, tokenAddress, amount, chainId = "5
   checks.push(await checkProtocolScore(investment, listing.evidence));
   checks.push(identity);
   if (target) checks.push(await checkMutability(target));
-  if (sim.level === PASS && target) checks.push(checkValue(sim.evidence));
+  // A simulation that came back with warnings attached still came back, and it
+  // still carries the balance change. Gating these on PASS alone meant the one
+  // case where the wallet had flagged something got two fewer checks than a
+  // clean one, which is exactly backwards.
+  const simulated = sim.level === PASS || sim.level === WARN;
+  if (simulated && target) checks.push(checkValue(sim.evidence));
   checks.push(exit, hist);
 
-  const depositUsd = sim.level === PASS
+  const depositUsd = simulated
     ? Math.abs((sim.evidence.balanceChange ?? [])
         .filter((c) => Number(c.amount) < 0)
         .reduce((s, c) => s + Number(c.valueUsd ?? 0), 0))
@@ -770,4 +799,12 @@ function corroborate(checks) {
     `permitted and common. Two independent sources agree on what it is instead: the chain shows ` +
     `its code cannot be replaced by any single key, and third-party records list this protocol, ` +
     `asset and rate. Weaker than reading the name off the contract, and enough to proceed on.`;
+  // Downgrading a check to WARN without giving it a plain-language line leaves
+  // the short report showing a bare title, which is the one place a reader
+  // cannot fill in the gap themselves.
+  identity.consequence = risk(
+    "The contract does not say what it is, so its identity rests on two indirect sources.",
+    "This contract implements no name, which is permitted and common, so it cannot be asked " +
+    "directly what it is. Two independent sources agree instead. That is weaker than reading " +
+    "the name off the contract, and if either source is wrong there is nothing else holding it up.");
 }

@@ -1,6 +1,223 @@
 [
   {
-    "label": "Lista USDT @ 5.47%",
+    "label": "Venus VAI @ 6.49%",
+    "investment": {
+      "binanceChainId": "56",
+      "defiProtocolId": "venus",
+      "protocolName": "Venus",
+      "investmentId": "0e8281946221bdff01f121bce7740932f292ba48975afeaf146ede70cf4f80af",
+      "investmentName": "VAI",
+      "investType": "Earn",
+      "apyType": "APY",
+      "apy": null,
+      "tvl": "2407333.67",
+      "apyBps": 649,
+      "apyDisplay": "6.49%"
+    },
+    "verdict": "NO-GO",
+    "reason": "unverified",
+    "blocked": 0,
+    "untested": 2,
+    "warned": 2,
+    "checks": [
+      {
+        "id": "listing",
+        "level": "PASS",
+        "title": "Product accepts deposits",
+        "detail": "Venus VAI — 6.49%, reported TVL $2,407,333.67",
+        "evidence": {
+          "binanceChainId": "56",
+          "defiProtocolId": "venus",
+          "protocolName": "Venus",
+          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20241028/0d696959-4857-4e0d-a2b5-3022264d34b5.jpg",
+          "investmentId": "0e8281946221bdff01f121bce7740932f292ba48975afeaf146ede70cf4f80af",
+          "investmentName": "VAI",
+          "investType": "Earn",
+          "investable": true,
+          "apy": null,
+          "apyType": "APY",
+          "tvl": "2407333.67",
+          "poolAddress": null,
+          "feeRate": null,
+          "assetTokenList": [
+            {
+              "tokenAddress": "0x4bd17003473389a42daf6a0a729f6fdb328bbbd7",
+              "tokenName": "VAI Stablecoin",
+              "tokenSymbol": "VAI"
+            }
+          ],
+          "rewardTokenList": [
+            {
+              "tokenAddress": "0x4bd17003473389a42daf6a0a729f6fdb328bbbd7",
+              "tokenName": "VAI Stablecoin",
+              "tokenSymbol": "VAI"
+            }
+          ],
+          "lpTokenList": [],
+          "borrowTokenList": [],
+          "apyBps": 649,
+          "apyDisplay": "6.49%"
+        },
+        "consequence": null
+      },
+      {
+        "id": "ratetype",
+        "level": "PASS",
+        "title": "Rate is a yield",
+        "detail": "Reported as APY — a return, comparable with other APY figures.",
+        "evidence": null,
+        "consequence": null
+      },
+      {
+        "id": "exitdelay",
+        "level": "PASS",
+        "title": "Withdrawal is immediate",
+        "detail": "Venus credits redeemed funds as soon as the transaction confirms, with no waiting period.",
+        "evidence": {
+          "defiProtocolId": "venus"
+        },
+        "consequence": null
+      },
+      {
+        "id": "simulate",
+        "level": "UNTESTED",
+        "title": "Nothing to simulate with — no VAI held",
+        "detail": "Checking a deposit means simulating one, and simulating one needs the asset in hand. The wallet holds 0. VAI. This says nothing about the product; it only means the contract behind it stayed hidden.",
+        "evidence": {
+          "code": 20002002,
+          "name": "INSUFFICIENT_BALANCE",
+          "message": "Insufficient balance. Your available VAI balance is 0."
+        },
+        "consequence": null,
+        "minimum": null
+      },
+      {
+        "id": "score",
+        "level": "PASS",
+        "title": "Binance scores this protocol 92.20",
+        "detail": "Venus is scored 92.20 by the venue listing it; its lowest dimension is governance strength 79.",
+        "evidence": {
+          "defiProtocolId": "venus",
+          "protocolName": "Venus",
+          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20241028/0d696959-4857-4e0d-a2b5-3022264d34b5.jpg",
+          "description": "Venus Protocol is a decentralized lending platform that lives on the BNB Chain. At its core, Venus is a money market protocol that enables lenders to generate yield on their tokens by providing loans, and borrowers to take out loans using $XVS and a variety of other currencies as collateral.",
+          "websiteUrl": "https://venus.io/",
+          "investType": [
+            "Earn"
+          ],
+          "supportedChains": [
+            "56"
+          ],
+          "tvl": "1294651261",
+          "tags": [
+            "DeFi",
+            "Lending"
+          ],
+          "founded": "2020",
+          "fdv": "99657487.08",
+          "totalFunding": null,
+          "socialLinks": {
+            "x": "https://x.com/VenusProtocol",
+            "discord": null,
+            "github": "https://github.com/SwipeWallet/Venus-Protocol",
+            "linkedin": "https://www.linkedin.com/company/venus-protocol/",
+            "telegram": null,
+            "gitbook": "",
+            "website": "https://venus.io/"
+          },
+          "team": [
+            {
+              "name": "Devita",
+              "role": "CM",
+              "twitter": "https://x.com/devitaivenus",
+              "linkedin": null,
+              "bio": "Devita is the community manager of Venus Protocol."
+            }
+          ],
+          "fundRaising": [],
+          "securityScore": "92.2",
+          "dimensionScores": {
+            "codeSecurity": "96",
+            "fundamentalHealth": "92.5",
+            "operationalResilience": "86.01",
+            "communityTrust": "97.72",
+            "governanceStrength": "79.32",
+            "marketStability": "93.97"
+          },
+          "highlights": [
+            "Project has security audits"
+          ],
+          "faq": [
+            {
+              "titleKey": "What is Venus Protocol?",
+              "answerKey": "Venus Protocol is a trusted decentralized finance lending and borrowing protocol that's deployed on the BNB Chain. it combines the stablecoin minting facility of Maker and the algorithmic money markets developed by Compound, providing a simplified user experience and core capabilities in a single application."
+            },
+            {
+              "titleKey": "What is XVS?",
+              "answerKey": "XVS is the governance token for the Venus protocol. By supplying certain tokens, you can earn XVS from the protocols as extra rewards on top of base interest. XVS token holders can also propose and vote on changes to the Venus protocol."
+            },
+            {
+              "titleKey": "How does the staking mechanism work in Venus Protocol?",
+              "answerKey": "Venus allows users to stake various assets, including stablecoins, core pool assets (like BTCB, ETH, TRX), and XVS. Users can provide liquidity to these pools and earn interest. Users can withdraw funds on demand or receive Venus Tokens (vTokens) representing your stake. vTokens are as freely tradable as any other cryptographic asset on BNB Chain."
+            },
+            {
+              "titleKey": "What risks should I be aware of when borrowing from Venus Protocol?",
+              "answerKey": "When borrowing from Venus, you should be aware of risks such as liquidation risk if your collateral value falls below the required threshold, and interest rate fluctuations that can increase your borrowing costs."
+            },
+            {
+              "titleKey": "How are interest rates calculated for borrowed assets on Venus?",
+              "answerKey": "Interest rates on Venus are algorithmically determined based on supply and demand dynamics for each asset. When demand to borrow an asset increases, the interest rate rises, and vice versa. The loan interest is calculated per block and compounded into your borrow balance. Therefore, the “Token borrowed” balance under \"Overall position\" reflects your total borrowed plus the accrued interest."
+            }
+          ]
+        },
+        "consequence": null
+      },
+      {
+        "id": "identity",
+        "level": "UNTESTED",
+        "title": "Contract never revealed",
+        "detail": "The listing publishes no pool address and the deposit could not be simulated, so there is nothing to put to the chain.",
+        "evidence": null,
+        "consequence": null
+      },
+      {
+        "id": "exit",
+        "level": "PASS",
+        "title": "Exit path exists",
+        "detail": "Exit reached the position check (no position held yet), so the withdraw path is wired up.",
+        "evidence": {
+          "code": 60003001,
+          "name": "INVESTMENT_NO_POSITION",
+          "message": "You don't have any position in this investment product."
+        },
+        "consequence": null
+      },
+      {
+        "id": "history",
+        "level": "WARN",
+        "title": "No independent record of this pool",
+        "detail": "No third-party record exists for Venus VAI, so today's 6.49% cannot be compared against any history.",
+        "evidence": null,
+        "consequence": {
+          "brief": "Nothing outside Binance confirms this rate is normal.",
+          "full": "No independent source tracks this product, so there is no way to tell whether today's rate is its usual one or a number that will not last."
+        }
+      },
+      {
+        "id": "capacity",
+        "level": "WARN",
+        "title": "Pool size unknown",
+        "detail": "Could not establish independent pool size, so deposit impact is unknown.",
+        "evidence": null,
+        "consequence": {
+          "brief": "Unknown whether your deposit is large enough to move the rate it was chosen for.",
+          "full": "Pool size could not be established independently, so there is no way to tell whether this deposit is small enough to leave the advertised rate intact."
+        }
+      }
+    ]
+  },
+  {
+    "label": "Lista USDT @ 5.40%",
     "investment": {
       "binanceChainId": "56",
       "defiProtocolId": "helio",
@@ -10,21 +227,21 @@
       "investType": "Earn",
       "apyType": "APY",
       "apy": null,
-      "tvl": "2693693.11",
-      "apyBps": 547,
-      "apyDisplay": "5.47%"
+      "tvl": "2666094.27",
+      "apyBps": 540,
+      "apyDisplay": "5.40%"
     },
     "verdict": "GO",
     "reason": "clear",
     "blocked": 0,
     "untested": 0,
-    "warned": 4,
+    "warned": 3,
     "checks": [
       {
         "id": "listing",
         "level": "PASS",
         "title": "Product accepts deposits",
-        "detail": "Lista USDT — 5.47%, reported TVL $2,693,693.11",
+        "detail": "Lista USDT — 5.40%, reported TVL $2,666,094.27",
         "evidence": {
           "binanceChainId": "56",
           "defiProtocolId": "helio",
@@ -36,7 +253,7 @@
           "investable": true,
           "apy": null,
           "apyType": "APY",
-          "tvl": "2693693.11",
+          "tvl": "2666094.27",
           "poolAddress": null,
           "feeRate": null,
           "assetTokenList": [
@@ -55,49 +272,183 @@
           ],
           "lpTokenList": [],
           "borrowTokenList": [],
-          "apyBps": 547,
-          "apyDisplay": "5.47%"
-        }
+          "apyBps": 540,
+          "apyDisplay": "5.40%"
+        },
+        "consequence": null
       },
       {
         "id": "ratetype",
         "level": "PASS",
         "title": "Rate is a yield",
         "detail": "Reported as APY — a return, comparable with other APY figures.",
-        "evidence": null
+        "evidence": null,
+        "consequence": null
+      },
+      {
+        "id": "exitdelay",
+        "level": "WARN",
+        "title": "Withdrawal might be queued",
+        "detail": "Binance names Lista among the protocols that can hold a redemption before the funds are claimable. Whether this particular product does is not published anywhere, and it is only reported on the withdrawal itself, which cannot be simulated without already holding a position. Some products under Lista pay out instantly.",
+        "evidence": {
+          "defiProtocolId": "helio",
+          "certain": false
+        },
+        "consequence": {
+          "brief": "Might not pay out the same day, and there is no way to know until you withdraw.",
+          "full": "Lista is named by Binance as a protocol that can queue redemptions, but the delay belongs to the product rather than the protocol and is only reported when you actually withdraw. I will show you the number the moment it comes back, and remember it for next time."
+        }
       },
       {
         "id": "simulate",
         "level": "PASS",
         "title": "Simulated without broadcasting",
-        "detail": "Would interact with 0xb5a30e1fa2cf3c8dea882124b3ab5a47a27c5dd2 — network fee ≈ $0.1716",
+        "detail": "Would interact with 0xb5a30e1fa2cf3c8dea882124b3ab5a47a27c5dd2 — network fee ≈ $0.0335",
         "evidence": {
           "balanceChange": [
             {
               "tokenSymbol": "USDT",
               "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
-              "amount": "-1",
-              "valueUsd": "0.9997075581837226"
+              "amount": "-2",
+              "valueUsd": "1.999382712111396"
             },
             {
               "tokenSymbol": "roxptUSDT",
               "tokenAddress": "0xb5a30e1fa2cf3c8dea882124b3ab5a47a27c5dd2",
-              "amount": "0.982683331995326379",
-              "valueUsd": "0.9996827811102975070520884307537790372683812620935694"
+              "amount": "1.965330140266471966",
+              "valueUsd": "1.9994142998603320038269919988823800084099023519523176"
             }
           ],
           "feeAndContract": {
             "estimatedNetworkFee": {
-              "amount": "0.000231615035867418",
+              "amount": "0.000044736491610875",
               "tokenSymbol": "BNB",
-              "valueUsd": "0.171570"
+              "valueUsd": "0.033516"
             },
             "interactWith": {
               "address": "0xb5a30e1fa2cf3c8dea882124b3ab5a47a27c5dd2"
             }
           },
           "warnings": []
-        }
+        },
+        "consequence": null
+      },
+      {
+        "id": "score",
+        "level": "PASS",
+        "title": "Binance scores this protocol 92.85",
+        "detail": "Lista DAO is scored 92.85 by the venue listing it; its lowest dimension is governance strength 81.",
+        "evidence": {
+          "defiProtocolId": "helio",
+          "protocolName": "Lista DAO",
+          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20240927/cee2f697-b4ea-4baf-955d-858d9eeac4f3.png",
+          "description": "Lista DAO is a decentralized stablecoin lending protocol powered by LSDfi. Users can undergo staking and liquid staking on Lista, as well as borrow lisUSD against a variety of decentralized collateral. Lista aims to position lisUSD as the number one stablecoin in the crypto space, leveraging on innovative liquid staking solutions.",
+          "websiteUrl": "https://lista.org/",
+          "investType": [
+            "Earn"
+          ],
+          "supportedChains": [
+            "56"
+          ],
+          "tvl": "1327219167.86",
+          "tags": [
+            "DeFi",
+            "Lending",
+            "LSD",
+            "Stablecoin Protocol"
+          ],
+          "founded": "2022",
+          "fdv": "63339192.36604",
+          "totalFunding": "10000000",
+          "socialLinks": {
+            "x": "https://x.com/LISTA_DAO",
+            "discord": null,
+            "github": "https://github.com/lista-dao",
+            "linkedin": "https://www.linkedin.com/company/listadao/",
+            "telegram": null,
+            "gitbook": "",
+            "website": "https://lista.org/"
+          },
+          "team": [
+            {
+              "name": "Toru Watanabe",
+              "role": "Founder and CEO",
+              "twitter": "https://x.com/ToruW1949",
+              "linkedin": "https://www.linkedin.com/in/toru-watanabe-736741255/?",
+              "bio": null
+            },
+            {
+              "name": "Terry Huang",
+              "role": "Co-founder and COO",
+              "twitter": "https://x.com/0xterry2016",
+              "linkedin": "https://www.linkedin.com/in/terry-huang-347028aa/",
+              "bio": null
+            },
+            {
+              "name": "Bob",
+              "role": "Product Lead ",
+              "twitter": "https://x.com/0xlistaBob",
+              "linkedin": null,
+              "bio": null
+            },
+            {
+              "name": "Lorena",
+              "role": "BD Lead",
+              "twitter": "https://x.com/lorena_zZZ1",
+              "linkedin": null,
+              "bio": null
+            }
+          ],
+          "fundRaising": [
+            {
+              "round": "--",
+              "amount": "10000000",
+              "date": "2023-08-10",
+              "investors": [
+                "YZi Labs"
+              ]
+            }
+          ],
+          "securityScore": "92.85",
+          "dimensionScores": {
+            "codeSecurity": "96",
+            "fundamentalHealth": "97",
+            "operationalResilience": "87.11",
+            "communityTrust": "95.61",
+            "governanceStrength": "80.54",
+            "marketStability": "93.08"
+          },
+          "highlights": [
+            "Project has security audits"
+          ],
+          "faq": [
+            {
+              "titleKey": "What is Lista?",
+              "answerKey": "Lista DAO functions as the open-source decentralized stablecoin lending protocol powered by LSDfi."
+            },
+            {
+              "titleKey": "What is slisBNB?",
+              "answerKey": "slisBNB is the native yield bearing and liquid staking token for BNB, built by Lista DAO. slisBNB appreciates against BNB in line with BNB’s staking APR, allowing users have the freedom to earn additional yields on different DeFi platforms while earning staking rewards passively."
+            },
+            {
+              "titleKey": "What is the minimum BNB I can stake?",
+              "answerKey": "The minimum stake value is 0.0001 BNB."
+            },
+            {
+              "titleKey": "What is Lista Lending?",
+              "answerKey": "Lista Lending is a permissionless lending protocol built on isolated market architecture. Each market consists of one collateral asset and one loan asset, operating independently. Risk is not shared between markets. Borrowers deposit collateral and borrow against it. Each market has its own LLTV (Liquidation Loan-to-Value) ratio, interest rate, and liquidity depth."
+            },
+            {
+              "titleKey": "How are interest rates determined?",
+              "answerKey": "At Lista Lending, interest rate is determined by our Interest Rate Model (IRM) based on the supply and demand of the loan asset. The key indicator of the supply and demand is market utilization rate - the ratio between borrowed and supplied assets."
+            },
+            {
+              "titleKey": "How does liquidation work?",
+              "answerKey": "Each Lista market has a Liquidation Loan-To-Value (LLTV) threshold. If your LTV exceeds the LLTV, either because your collateral value drops or your debt grows from accrued interest, your position becomes eligible for liquidation. To stay safe, keep your LTV well below the LLTV and top up collateral or repay early if the market moves against you."
+            }
+          ]
+        },
+        "consequence": null
       },
       {
         "id": "identity",
@@ -109,6 +460,10 @@
           "isContract": true,
           "symbol": "roxptUSDT",
           "name": "RockawayX PT Yield"
+        },
+        "consequence": {
+          "brief": "RockawayX PT Yield decides what your money is lent against, not Lista.",
+          "full": "Your deposit does not sit still. It is lent out, and someone decides what it may be lent against, at what ratio, and priced by which oracle. Here that someone is the curator, not Lista. If those limits are set loosely and borrowers default while their collateral is falling, the vault takes the loss and your deposit does not come back whole. Any score or reputation you are relying on belongs to Lista, and does not cover the curator's decisions."
         }
       },
       {
@@ -123,14 +478,19 @@
           "beacon": null,
           "owner": null,
           "chain": null
+        },
+        "consequence": {
+          "brief": "One keyholder can swap the code holding your money, without warning.",
+          "full": "Whoever holds that key can swap the code holding your money, without asking and without warning, including for code that moves it somewhere else. Nothing here says they will. It says your deposit is protected by trust in that keyholder rather than by the code just verified, and that this is the mechanism behind several of the largest losses in DeFi."
         }
       },
       {
         "id": "value",
         "level": "PASS",
         "title": "Value is conserved",
-        "detail": "$1.00 in → $1.00 of position (-0.00% difference).",
-        "evidence": null
+        "detail": "$2.00 in → $2.00 of position (+0.00% difference).",
+        "evidence": null,
+        "consequence": null
       },
       {
         "id": "exit",
@@ -141,29 +501,40 @@
           "code": 60003001,
           "name": "INVESTMENT_NO_POSITION",
           "message": "You don't have any position in this investment product."
-        }
+        },
+        "consequence": null
       },
       {
         "id": "history",
-        "level": "WARN",
-        "title": "Cannot tell which pool this is",
-        "detail": "5 independent pools carry this protocol and asset, and none advertises a matching rate. The nearest is 5.36% against the listed 5.47% (0.11pp apart). Which pool a deposit would enter cannot be established, so its history cannot be read.",
+        "level": "PASS",
+        "title": "Rate is normal for this pool",
+        "detail": "5.40% sits at the 21st percentile of 142 days of record (median 7.02%) since 2026-04-20.",
         "evidence": {
-          "recognised": true,
-          "candidates": 5
-        }
+          "samples": 142,
+          "from": "2026-04-20",
+          "median": 7.02038,
+          "p90": 12.0485,
+          "max": 2681.41102,
+          "percentile": 0.2112676056338028,
+          "ratioToMedian": 0.7691891322122164,
+          "project": "lista-lending",
+          "poolId": "80a280c8-8225-4232-a2a6-70e6606acd84",
+          "tvlUsd": 2685964
+        },
+        "consequence": null
       },
       {
         "id": "capacity",
-        "level": "WARN",
-        "title": "Pool size unknown",
-        "detail": "Could not establish independent pool size, so deposit impact is unknown.",
-        "evidence": null
+        "level": "PASS",
+        "title": "Pool can absorb this deposit",
+        "detail": "$2.00 is 0.00% of a $2,685,964 pool.",
+        "evidence": null,
+        "consequence": null
       }
     ]
   },
   {
-    "label": "Lista USDT @ 4.98%",
+    "label": "Lista USDT @ 5.09%",
     "investment": {
       "binanceChainId": "56",
       "defiProtocolId": "helio",
@@ -173,21 +544,21 @@
       "investType": "Earn",
       "apyType": "APY",
       "apy": null,
-      "tvl": "9082702.2",
-      "apyBps": 498,
-      "apyDisplay": "4.98%"
+      "tvl": "8674035.14",
+      "apyBps": 509,
+      "apyDisplay": "5.09%"
     },
     "verdict": "NO-GO",
     "reason": "unverified",
     "blocked": 0,
     "untested": 1,
-    "warned": 3,
+    "warned": 4,
     "checks": [
       {
         "id": "listing",
         "level": "PASS",
         "title": "Product accepts deposits",
-        "detail": "Lista USDT — 4.98%, reported TVL $9,082,702.2",
+        "detail": "Lista USDT — 5.09%, reported TVL $8,674,035.14",
         "evidence": {
           "binanceChainId": "56",
           "defiProtocolId": "helio",
@@ -199,7 +570,7 @@
           "investable": true,
           "apy": null,
           "apyType": "APY",
-          "tvl": "9082702.2",
+          "tvl": "8674035.14",
           "poolAddress": null,
           "feeRate": null,
           "assetTokenList": [
@@ -218,55 +589,189 @@
           ],
           "lpTokenList": [],
           "borrowTokenList": [],
-          "apyBps": 498,
-          "apyDisplay": "4.98%"
-        }
+          "apyBps": 509,
+          "apyDisplay": "5.09%"
+        },
+        "consequence": null
       },
       {
         "id": "ratetype",
         "level": "PASS",
         "title": "Rate is a yield",
         "detail": "Reported as APY — a return, comparable with other APY figures.",
-        "evidence": null
+        "evidence": null,
+        "consequence": null
+      },
+      {
+        "id": "exitdelay",
+        "level": "WARN",
+        "title": "Withdrawal might be queued",
+        "detail": "Binance names Lista among the protocols that can hold a redemption before the funds are claimable. Whether this particular product does is not published anywhere, and it is only reported on the withdrawal itself, which cannot be simulated without already holding a position. Some products under Lista pay out instantly.",
+        "evidence": {
+          "defiProtocolId": "helio",
+          "certain": false
+        },
+        "consequence": {
+          "brief": "Might not pay out the same day, and there is no way to know until you withdraw.",
+          "full": "Lista is named by Binance as a protocol that can queue redemptions, but the delay belongs to the product rather than the protocol and is only reported when you actually withdraw. I will show you the number the moment it comes back, and remember it for next time."
+        }
       },
       {
         "id": "simulate",
         "level": "PASS",
         "title": "Simulated without broadcasting",
-        "detail": "Would interact with 0x66de07893db7492b56ba88503b4cc99bab1796f3 — network fee ≈ $0.1883",
+        "detail": "Would interact with 0x66de07893db7492b56ba88503b4cc99bab1796f3 — network fee ≈ $0.0427",
         "evidence": {
           "balanceChange": [
             {
               "tokenSymbol": "USDT",
               "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
-              "amount": "-1",
-              "valueUsd": "0.9997649511624648"
+              "amount": "-2",
+              "valueUsd": "1.9994246128578456"
             },
             {
               "tokenSymbol": "sLisUSD",
               "tokenAddress": "0x37db1ae9b24055d1f9fe973aea40b7eb2995d0bf",
-              "amount": "0.917047519106312555",
-              "valueUsd": "0.9974734069914456809686093047637210"
+              "amount": "1.834083656664805998",
+              "valueUsd": "1.992713489967538353245619913463574"
             },
             {
               "tokenSymbol": "StakeUSDTListaDistributor",
               "tokenAddress": "0xf2fa32498305e6595e3d54dc41674d0fca207026",
-              "amount": "1",
+              "amount": "2",
               "valueUsd": null
             }
           ],
           "feeAndContract": {
             "estimatedNetworkFee": {
-              "amount": "0.000253309267338",
+              "amount": "0.000056922852875912",
               "tokenSymbol": "BNB",
-              "valueUsd": "0.188330"
+              "valueUsd": "0.042742"
             },
             "interactWith": {
               "address": "0x66de07893db7492b56ba88503b4cc99bab1796f3"
             }
           },
           "warnings": []
-        }
+        },
+        "consequence": null
+      },
+      {
+        "id": "score",
+        "level": "PASS",
+        "title": "Binance scores this protocol 92.85",
+        "detail": "Lista DAO is scored 92.85 by the venue listing it; its lowest dimension is governance strength 81.",
+        "evidence": {
+          "defiProtocolId": "helio",
+          "protocolName": "Lista DAO",
+          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20240927/cee2f697-b4ea-4baf-955d-858d9eeac4f3.png",
+          "description": "Lista DAO is a decentralized stablecoin lending protocol powered by LSDfi. Users can undergo staking and liquid staking on Lista, as well as borrow lisUSD against a variety of decentralized collateral. Lista aims to position lisUSD as the number one stablecoin in the crypto space, leveraging on innovative liquid staking solutions.",
+          "websiteUrl": "https://lista.org/",
+          "investType": [
+            "Earn"
+          ],
+          "supportedChains": [
+            "56"
+          ],
+          "tvl": "1327219167.86",
+          "tags": [
+            "DeFi",
+            "Lending",
+            "LSD",
+            "Stablecoin Protocol"
+          ],
+          "founded": "2022",
+          "fdv": "63339192.36604",
+          "totalFunding": "10000000",
+          "socialLinks": {
+            "x": "https://x.com/LISTA_DAO",
+            "discord": null,
+            "github": "https://github.com/lista-dao",
+            "linkedin": "https://www.linkedin.com/company/listadao/",
+            "telegram": null,
+            "gitbook": "",
+            "website": "https://lista.org/"
+          },
+          "team": [
+            {
+              "name": "Toru Watanabe",
+              "role": "Founder and CEO",
+              "twitter": "https://x.com/ToruW1949",
+              "linkedin": "https://www.linkedin.com/in/toru-watanabe-736741255/?",
+              "bio": null
+            },
+            {
+              "name": "Terry Huang",
+              "role": "Co-founder and COO",
+              "twitter": "https://x.com/0xterry2016",
+              "linkedin": "https://www.linkedin.com/in/terry-huang-347028aa/",
+              "bio": null
+            },
+            {
+              "name": "Bob",
+              "role": "Product Lead ",
+              "twitter": "https://x.com/0xlistaBob",
+              "linkedin": null,
+              "bio": null
+            },
+            {
+              "name": "Lorena",
+              "role": "BD Lead",
+              "twitter": "https://x.com/lorena_zZZ1",
+              "linkedin": null,
+              "bio": null
+            }
+          ],
+          "fundRaising": [
+            {
+              "round": "--",
+              "amount": "10000000",
+              "date": "2023-08-10",
+              "investors": [
+                "YZi Labs"
+              ]
+            }
+          ],
+          "securityScore": "92.85",
+          "dimensionScores": {
+            "codeSecurity": "96",
+            "fundamentalHealth": "97",
+            "operationalResilience": "87.11",
+            "communityTrust": "95.61",
+            "governanceStrength": "80.54",
+            "marketStability": "93.08"
+          },
+          "highlights": [
+            "Project has security audits"
+          ],
+          "faq": [
+            {
+              "titleKey": "What is Lista?",
+              "answerKey": "Lista DAO functions as the open-source decentralized stablecoin lending protocol powered by LSDfi."
+            },
+            {
+              "titleKey": "What is slisBNB?",
+              "answerKey": "slisBNB is the native yield bearing and liquid staking token for BNB, built by Lista DAO. slisBNB appreciates against BNB in line with BNB’s staking APR, allowing users have the freedom to earn additional yields on different DeFi platforms while earning staking rewards passively."
+            },
+            {
+              "titleKey": "What is the minimum BNB I can stake?",
+              "answerKey": "The minimum stake value is 0.0001 BNB."
+            },
+            {
+              "titleKey": "What is Lista Lending?",
+              "answerKey": "Lista Lending is a permissionless lending protocol built on isolated market architecture. Each market consists of one collateral asset and one loan asset, operating independently. Risk is not shared between markets. Borrowers deposit collateral and borrow against it. Each market has its own LLTV (Liquidation Loan-to-Value) ratio, interest rate, and liquidity depth."
+            },
+            {
+              "titleKey": "How are interest rates determined?",
+              "answerKey": "At Lista Lending, interest rate is determined by our Interest Rate Model (IRM) based on the supply and demand of the loan asset. The key indicator of the supply and demand is market utilization rate - the ratio between borrowed and supplied assets."
+            },
+            {
+              "titleKey": "How does liquidation work?",
+              "answerKey": "Each Lista market has a Liquidation Loan-To-Value (LLTV) threshold. If your LTV exceeds the LLTV, either because your collateral value drops or your debt grows from accrued interest, your position becomes eligible for liquidation. To stay safe, keep your LTV well below the LLTV and top up collateral or repay early if the market moves against you."
+            }
+          ]
+        },
+        "consequence": null
       },
       {
         "id": "identity",
@@ -278,7 +783,8 @@
           "isContract": true,
           "symbol": null,
           "name": null
-        }
+        },
+        "consequence": null
       },
       {
         "id": "mutability",
@@ -292,14 +798,19 @@
           "beacon": null,
           "owner": null,
           "chain": null
+        },
+        "consequence": {
+          "brief": "One keyholder can swap the code holding your money, without warning.",
+          "full": "Whoever holds that key can swap the code holding your money, without asking and without warning, including for code that moves it somewhere else. Nothing here says they will. It says your deposit is protected by trust in that keyholder rather than by the code just verified, and that this is the mechanism behind several of the largest losses in DeFi."
         }
       },
       {
         "id": "value",
         "level": "PASS",
         "title": "Value is conserved",
-        "detail": "$1.00 in → $1.00 of position (-0.23% difference).",
-        "evidence": null
+        "detail": "$2.00 in → $1.99 of position (-0.34% difference).",
+        "evidence": null,
+        "consequence": null
       },
       {
         "id": "exit",
@@ -310,16 +821,21 @@
           "code": 60003001,
           "name": "INVESTMENT_NO_POSITION",
           "message": "You don't have any position in this investment product."
-        }
+        },
+        "consequence": null
       },
       {
         "id": "history",
         "level": "WARN",
         "title": "Cannot tell which pool this is",
-        "detail": "5 independent pools carry this protocol and asset, and none advertises a matching rate. The nearest is 4.60% against the listed 4.98% (0.38pp apart). Which pool a deposit would enter cannot be established, so its history cannot be read.",
+        "detail": "5 independent pools carry this protocol and asset, and none advertises a matching rate. The nearest is 4.77% against the listed 5.09% (0.32pp apart). Which pool a deposit would enter cannot be established, so its history cannot be read.",
         "evidence": {
           "recognised": true,
           "candidates": 5
+        },
+        "consequence": {
+          "brief": "Which pool your money enters cannot be pinned down, so its history cannot be read.",
+          "full": "The protocol and asset are recognised independently, but several pools carry them and none advertises a matching rate. Without knowing which one this is, there is no record to check today's rate against."
         }
       },
       {
@@ -327,12 +843,523 @@
         "level": "WARN",
         "title": "Pool size unknown",
         "detail": "Could not establish independent pool size, so deposit impact is unknown.",
-        "evidence": null
+        "evidence": null,
+        "consequence": {
+          "brief": "Unknown whether your deposit is large enough to move the rate it was chosen for.",
+          "full": "Pool size could not be established independently, so there is no way to tell whether this deposit is small enough to leave the advertised rate intact."
+        }
       }
     ]
   },
   {
-    "label": "Aave V3 USDT @ 2.90%",
+    "label": "Venus sUSDe @ 4.67%",
+    "investment": {
+      "binanceChainId": "56",
+      "defiProtocolId": "venus",
+      "protocolName": "Venus",
+      "investmentId": "6646b2a3223f8d355cd6de1cc067f69251a42a03d0a73d6be33bffc141a54018",
+      "investmentName": "sUSDe",
+      "investType": "Earn",
+      "apyType": "APY",
+      "apy": null,
+      "tvl": "2166810.57",
+      "apyBps": 467,
+      "apyDisplay": "4.67%"
+    },
+    "verdict": "NO-GO",
+    "reason": "unverified",
+    "blocked": 0,
+    "untested": 2,
+    "warned": 2,
+    "checks": [
+      {
+        "id": "listing",
+        "level": "PASS",
+        "title": "Product accepts deposits",
+        "detail": "Venus sUSDe — 4.67%, reported TVL $2,166,810.57",
+        "evidence": {
+          "binanceChainId": "56",
+          "defiProtocolId": "venus",
+          "protocolName": "Venus",
+          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20241028/0d696959-4857-4e0d-a2b5-3022264d34b5.jpg",
+          "investmentId": "6646b2a3223f8d355cd6de1cc067f69251a42a03d0a73d6be33bffc141a54018",
+          "investmentName": "sUSDe",
+          "investType": "Earn",
+          "investable": true,
+          "apy": null,
+          "apyType": "APY",
+          "tvl": "2166810.57",
+          "poolAddress": null,
+          "feeRate": null,
+          "assetTokenList": [
+            {
+              "tokenAddress": "0x211cc4dd073734da055fbf44a2b4667d5e5fe5d2",
+              "tokenName": "Staked USDe",
+              "tokenSymbol": "sUSDe"
+            }
+          ],
+          "rewardTokenList": [
+            {
+              "tokenAddress": "0x211cc4dd073734da055fbf44a2b4667d5e5fe5d2",
+              "tokenName": "Staked USDe",
+              "tokenSymbol": "sUSDe"
+            }
+          ],
+          "lpTokenList": [],
+          "borrowTokenList": [],
+          "apyBps": 467,
+          "apyDisplay": "4.67%"
+        },
+        "consequence": null
+      },
+      {
+        "id": "ratetype",
+        "level": "PASS",
+        "title": "Rate is a yield",
+        "detail": "Reported as APY — a return, comparable with other APY figures.",
+        "evidence": null,
+        "consequence": null
+      },
+      {
+        "id": "exitdelay",
+        "level": "PASS",
+        "title": "Withdrawal is immediate",
+        "detail": "Venus credits redeemed funds as soon as the transaction confirms, with no waiting period.",
+        "evidence": {
+          "defiProtocolId": "venus"
+        },
+        "consequence": null
+      },
+      {
+        "id": "simulate",
+        "level": "UNTESTED",
+        "title": "Nothing to simulate with — no sUSDe held",
+        "detail": "Checking a deposit means simulating one, and simulating one needs the asset in hand. The wallet holds 0. sUSDe. This says nothing about the product; it only means the contract behind it stayed hidden.",
+        "evidence": {
+          "code": 20002002,
+          "name": "INSUFFICIENT_BALANCE",
+          "message": "Insufficient balance. Your available sUSDe balance is 0."
+        },
+        "consequence": null,
+        "minimum": null
+      },
+      {
+        "id": "score",
+        "level": "PASS",
+        "title": "Binance scores this protocol 92.20",
+        "detail": "Venus is scored 92.20 by the venue listing it; its lowest dimension is governance strength 79.",
+        "evidence": {
+          "defiProtocolId": "venus",
+          "protocolName": "Venus",
+          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20241028/0d696959-4857-4e0d-a2b5-3022264d34b5.jpg",
+          "description": "Venus Protocol is a decentralized lending platform that lives on the BNB Chain. At its core, Venus is a money market protocol that enables lenders to generate yield on their tokens by providing loans, and borrowers to take out loans using $XVS and a variety of other currencies as collateral.",
+          "websiteUrl": "https://venus.io/",
+          "investType": [
+            "Earn"
+          ],
+          "supportedChains": [
+            "56"
+          ],
+          "tvl": "1294651261",
+          "tags": [
+            "DeFi",
+            "Lending"
+          ],
+          "founded": "2020",
+          "fdv": "99657487.08",
+          "totalFunding": null,
+          "socialLinks": {
+            "x": "https://x.com/VenusProtocol",
+            "discord": null,
+            "github": "https://github.com/SwipeWallet/Venus-Protocol",
+            "linkedin": "https://www.linkedin.com/company/venus-protocol/",
+            "telegram": null,
+            "gitbook": "",
+            "website": "https://venus.io/"
+          },
+          "team": [
+            {
+              "name": "Devita",
+              "role": "CM",
+              "twitter": "https://x.com/devitaivenus",
+              "linkedin": null,
+              "bio": "Devita is the community manager of Venus Protocol."
+            }
+          ],
+          "fundRaising": [],
+          "securityScore": "92.2",
+          "dimensionScores": {
+            "codeSecurity": "96",
+            "fundamentalHealth": "92.5",
+            "operationalResilience": "86.01",
+            "communityTrust": "97.72",
+            "governanceStrength": "79.32",
+            "marketStability": "93.97"
+          },
+          "highlights": [
+            "Project has security audits"
+          ],
+          "faq": [
+            {
+              "titleKey": "What is Venus Protocol?",
+              "answerKey": "Venus Protocol is a trusted decentralized finance lending and borrowing protocol that's deployed on the BNB Chain. it combines the stablecoin minting facility of Maker and the algorithmic money markets developed by Compound, providing a simplified user experience and core capabilities in a single application."
+            },
+            {
+              "titleKey": "What is XVS?",
+              "answerKey": "XVS is the governance token for the Venus protocol. By supplying certain tokens, you can earn XVS from the protocols as extra rewards on top of base interest. XVS token holders can also propose and vote on changes to the Venus protocol."
+            },
+            {
+              "titleKey": "How does the staking mechanism work in Venus Protocol?",
+              "answerKey": "Venus allows users to stake various assets, including stablecoins, core pool assets (like BTCB, ETH, TRX), and XVS. Users can provide liquidity to these pools and earn interest. Users can withdraw funds on demand or receive Venus Tokens (vTokens) representing your stake. vTokens are as freely tradable as any other cryptographic asset on BNB Chain."
+            },
+            {
+              "titleKey": "What risks should I be aware of when borrowing from Venus Protocol?",
+              "answerKey": "When borrowing from Venus, you should be aware of risks such as liquidation risk if your collateral value falls below the required threshold, and interest rate fluctuations that can increase your borrowing costs."
+            },
+            {
+              "titleKey": "How are interest rates calculated for borrowed assets on Venus?",
+              "answerKey": "Interest rates on Venus are algorithmically determined based on supply and demand dynamics for each asset. When demand to borrow an asset increases, the interest rate rises, and vice versa. The loan interest is calculated per block and compounded into your borrow balance. Therefore, the “Token borrowed” balance under \"Overall position\" reflects your total borrowed plus the accrued interest."
+            }
+          ]
+        },
+        "consequence": null
+      },
+      {
+        "id": "identity",
+        "level": "UNTESTED",
+        "title": "Contract never revealed",
+        "detail": "The listing publishes no pool address and the deposit could not be simulated, so there is nothing to put to the chain.",
+        "evidence": null,
+        "consequence": null
+      },
+      {
+        "id": "exit",
+        "level": "PASS",
+        "title": "Exit path exists",
+        "detail": "Exit reached the position check (no position held yet), so the withdraw path is wired up.",
+        "evidence": {
+          "code": 60003001,
+          "name": "INVESTMENT_NO_POSITION",
+          "message": "You don't have any position in this investment product."
+        },
+        "consequence": null
+      },
+      {
+        "id": "history",
+        "level": "WARN",
+        "title": "Cannot tell which pool this is",
+        "detail": "1 independent pool carry this protocol and asset, and none advertises a matching rate. The nearest is 0.00% against the listed 4.67% (4.67pp apart). Which pool a deposit would enter cannot be established, so its history cannot be read.",
+        "evidence": {
+          "recognised": true,
+          "candidates": 1
+        },
+        "consequence": {
+          "brief": "Which pool your money enters cannot be pinned down, so its history cannot be read.",
+          "full": "The protocol and asset are recognised independently, but several pools carry them and none advertises a matching rate. Without knowing which one this is, there is no record to check today's rate against."
+        }
+      },
+      {
+        "id": "capacity",
+        "level": "WARN",
+        "title": "Pool size unknown",
+        "detail": "Could not establish independent pool size, so deposit impact is unknown.",
+        "evidence": null,
+        "consequence": {
+          "brief": "Unknown whether your deposit is large enough to move the rate it was chosen for.",
+          "full": "Pool size could not be established independently, so there is no way to tell whether this deposit is small enough to leave the advertised rate intact."
+        }
+      }
+    ]
+  },
+  {
+    "label": "Solv BTCB @ 3.21%",
+    "investment": {
+      "binanceChainId": "56",
+      "defiProtocolId": "solv",
+      "protocolName": "Solv",
+      "investmentId": "ae12b078b583c0655375d362a5491abd20b96037c6a2eef6d6e99721824ea6f3",
+      "investmentName": "BTCB",
+      "investType": "Earn",
+      "apyType": "APY",
+      "apy": null,
+      "tvl": "21747547.84",
+      "apyBps": 321,
+      "apyDisplay": "3.21%"
+    },
+    "verdict": "NO-GO",
+    "reason": "unverified",
+    "blocked": 0,
+    "untested": 2,
+    "warned": 2,
+    "checks": [
+      {
+        "id": "listing",
+        "level": "PASS",
+        "title": "Product accepts deposits",
+        "detail": "Solv BTCB — 3.21%, reported TVL $21,747,547.84",
+        "evidence": {
+          "binanceChainId": "56",
+          "defiProtocolId": "solv",
+          "protocolName": "Solv",
+          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20240814/d8d2fee4-9497-40cb-b58d-bc5af2479042.jpg",
+          "investmentId": "ae12b078b583c0655375d362a5491abd20b96037c6a2eef6d6e99721824ea6f3",
+          "investmentName": "BTCB",
+          "investType": "Earn",
+          "investable": true,
+          "apy": null,
+          "apyType": "APY",
+          "tvl": "21747547.84",
+          "poolAddress": null,
+          "feeRate": null,
+          "assetTokenList": [
+            {
+              "tokenAddress": "0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c",
+              "tokenName": "BTCB Token",
+              "tokenSymbol": "BTCB"
+            }
+          ],
+          "rewardTokenList": [
+            {
+              "tokenAddress": "0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c",
+              "tokenName": "BTCB Token",
+              "tokenSymbol": "BTCB"
+            }
+          ],
+          "lpTokenList": [],
+          "borrowTokenList": [],
+          "apyBps": 321,
+          "apyDisplay": "3.21%"
+        },
+        "consequence": null
+      },
+      {
+        "id": "ratetype",
+        "level": "PASS",
+        "title": "Rate is a yield",
+        "detail": "Reported as APY — a return, comparable with other APY figures.",
+        "evidence": null,
+        "consequence": null
+      },
+      {
+        "id": "exitdelay",
+        "level": "PASS",
+        "title": "Withdrawal is immediate",
+        "detail": "Solv credits redeemed funds as soon as the transaction confirms, with no waiting period.",
+        "evidence": {
+          "defiProtocolId": "solv"
+        },
+        "consequence": null
+      },
+      {
+        "id": "simulate",
+        "level": "UNTESTED",
+        "title": "Nothing to simulate with — no BTCB held",
+        "detail": "Checking a deposit means simulating one, and simulating one needs the asset in hand. The wallet holds 0. BTCB. This says nothing about the product; it only means the contract behind it stayed hidden.",
+        "evidence": {
+          "code": 20002002,
+          "name": "INSUFFICIENT_BALANCE",
+          "message": "Insufficient balance. Your available BTCB balance is 0."
+        },
+        "consequence": null,
+        "minimum": null
+      },
+      {
+        "id": "score",
+        "level": "PASS",
+        "title": "Binance scores this protocol 88.75",
+        "detail": "Solv Protocol is scored 88.75 by the venue listing it; its lowest dimension is governance strength 74.",
+        "evidence": {
+          "defiProtocolId": "solv",
+          "protocolName": "Solv Protocol",
+          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20240814/d8d2fee4-9497-40cb-b58d-bc5af2479042.jpg",
+          "description": "Solv is a Decentralized Bitcoin Staking Protocol to unlock the full potential of Bitcoin assets through a liquidity consensus infrastructure. By addressing the fragmentation of BTC assets, yield opportunities, and custody solutions, Solv offers Bitcoin holders a gateway to BTCFi, continuously builds pathways and confidence for traditional funds to enter the crypto world.",
+          "websiteUrl": "https://solv.finance/",
+          "investType": [
+            "Earn"
+          ],
+          "supportedChains": [
+            "56"
+          ],
+          "tvl": "195528323",
+          "tags": [
+            "DeFi",
+            "LSD",
+            "Bitcoin Ecosystem"
+          ],
+          "founded": "2020",
+          "fdv": "37861887.00000",
+          "totalFunding": "22000000",
+          "socialLinks": {
+            "x": "https://x.com/SolvProtocol",
+            "discord": null,
+            "github": "https://github.com/solv-finance",
+            "linkedin": "https://www.linkedin.com/company/solv-foundation/",
+            "telegram": null,
+            "gitbook": "https://docs.solv.finance/solv-documentation/getting-started/overview",
+            "website": "https://solv.finance/"
+          },
+          "team": [
+            {
+              "name": "Ryan Chow",
+              "role": "Co-Founder",
+              "twitter": "https://x.com/RyanChow_DeFi",
+              "linkedin": "https://www.linkedin.com/in/ryanchoww/",
+              "bio": "Ryan Chow is currently a co-founder of Solv Protocol."
+            },
+            {
+              "name": "Will",
+              "role": "Co-Founder",
+              "twitter": "https://x.com/Will42W",
+              "linkedin": null,
+              "bio": "Will is currently the co-founder of Solv Protocol. He has worked in the financial IT field for 20 years and has presided over the design and development of the world's largest bank accounting system based on open platforms and distributed technologies. He is the recipient of the \"20th Anniversary Outstanding Contribution Award of Zhongguancun\"."
+            },
+            {
+              "name": "Yan Meng",
+              "role": "Co-Founder",
+              "twitter": "https://x.com/myanTokenGeek",
+              "linkedin": null,
+              "bio": "Yan Meng is currently the co-founder of Solv Protocol, and formerly served as Vice President of CSDN. Additionally, he is an active KOL in the Cryptocurrency field."
+            },
+            {
+              "name": "Jing Xiong",
+              "role": "CBO",
+              "twitter": "https://x.com/bowangfi",
+              "linkedin": null,
+              "bio": "Jing Xiong is Chief Business Officer and Partner at Solv Protocol."
+            },
+            {
+              "name": "Ethean Yu",
+              "role": "Marketing Manager",
+              "twitter": "https://x.com/Ethean_yu",
+              "linkedin": "https://www.linkedin.com/in/ethean-yu-6857151a1/",
+              "bio": "Ethean Yu is the Marketing Manager at Solv Protocol. She graduated from Central University of Finance and Economics."
+            }
+          ],
+          "fundRaising": [
+            {
+              "round": "Strategic",
+              "amount": "11000000",
+              "date": "2024-10-14",
+              "investors": [
+                "Blockchain Capital",
+                "OKX Ventures",
+                "ABCDE Capital",
+                "Waterdrip Capital",
+                "gumi Cryptos Capital",
+                "CMT Digital",
+                "IOSG Ventures",
+                "Laser Digital",
+                "Comma3 Ventures",
+                "Bing Ventures",
+                "Fourth Revolution Capital",
+                "Bitrise Capital",
+                "Antalpha Ventures"
+              ]
+            },
+            {
+              "round": "--",
+              "amount": "6000000",
+              "date": "2023-08-01",
+              "investors": [
+                "Laser Digital",
+                "UOB Venture",
+                "Mirana Ventures",
+                "Apollo Crypto",
+                "Hash CIB",
+                "GeekCartel",
+                "ByteTrade",
+                "Bing Ventures",
+                "Matrix Partners China",
+                "Emirates Consortium"
+              ]
+            },
+            {
+              "round": "Strategic",
+              "amount": null,
+              "date": "2022-01-27",
+              "investors": [
+                "YZi Labs"
+              ]
+            }
+          ],
+          "securityScore": "88.75",
+          "dimensionScores": {
+            "codeSecurity": "92.12",
+            "fundamentalHealth": "94.04",
+            "operationalResilience": "82.57",
+            "communityTrust": "87.06",
+            "governanceStrength": "73.84",
+            "marketStability": "90.57"
+          },
+          "highlights": [
+            "Project has security audits"
+          ],
+          "faq": [
+            {
+              "titleKey": "What is Solv Protocol?",
+              "answerKey": "Solv Protocol is a Unified Bitcoin Liquidity Matrix, aimed at bridging Bitcoin's trillion-dollar economy to DeFi by unifying its fragmented liquidity through SolvBTC."
+            },
+            {
+              "titleKey": "What are BTCB and BTC+",
+              "answerKey": "BTCB is a tokenized version of Bitcoin on the BNB Chain. It is backed 1:1 by Bitcoin and allows users to interact with DeFi applications on BSC using Bitcoin.<Br/>BTC+ is Solv’s flagship master vault, designed to deliver the best risk-adjusted Bitcoin yield in the market. It dynamically allocates to a range of sub-vaults and rebalances periodically to optimize returns for BTC holders."
+            },
+            {
+              "titleKey": "How can BTC+ holders generate substantial Bitcoin-related yield?",
+              "answerKey": "BTC+ is Solv’s premier master vault (fund of funds), optimizing risk-adjusted Bitcoin yield by dynamically allocating to sub-vaults like SolvBTC.AVAX, SolvBTC.JUP, and SolvBTC.TRADING. It rebalances periodically based on market conditions to maximize returns. Yield is generated through on-chain incentive farming, liquidity provision, trading fees, as well as off-chain strategies. Targeting a 3-6% base APY, boosted by SOLV token rewards, BTC+ transforms idle BTC into a high-yield asset in the $2.1 trillion market."
+            }
+          ]
+        },
+        "consequence": null
+      },
+      {
+        "id": "identity",
+        "level": "UNTESTED",
+        "title": "Contract never revealed",
+        "detail": "The listing publishes no pool address and the deposit could not be simulated, so there is nothing to put to the chain.",
+        "evidence": null,
+        "consequence": null
+      },
+      {
+        "id": "exit",
+        "level": "PASS",
+        "title": "Exit path exists",
+        "detail": "Exit reached the position check (no position held yet), so the withdraw path is wired up.",
+        "evidence": {
+          "code": 60003001,
+          "name": "INVESTMENT_NO_POSITION",
+          "message": "You don't have any position in this investment product."
+        },
+        "consequence": null
+      },
+      {
+        "id": "history",
+        "level": "WARN",
+        "title": "Cannot tell which pool this is",
+        "detail": "1 independent pool carry this protocol and asset, and none advertises a matching rate. The nearest is 0.00% against the listed 3.21% (3.21pp apart). Which pool a deposit would enter cannot be established, so its history cannot be read.",
+        "evidence": {
+          "recognised": true,
+          "candidates": 1
+        },
+        "consequence": {
+          "brief": "Which pool your money enters cannot be pinned down, so its history cannot be read.",
+          "full": "The protocol and asset are recognised independently, but several pools carry them and none advertises a matching rate. Without knowing which one this is, there is no record to check today's rate against."
+        }
+      },
+      {
+        "id": "capacity",
+        "level": "WARN",
+        "title": "Pool size unknown",
+        "detail": "Could not establish independent pool size, so deposit impact is unknown.",
+        "evidence": null,
+        "consequence": {
+          "brief": "Unknown whether your deposit is large enough to move the rate it was chosen for.",
+          "full": "Pool size could not be established independently, so there is no way to tell whether this deposit is small enough to leave the advertised rate intact."
+        }
+      }
+    ]
+  },
+  {
+    "label": "Aave V3 USDT @ 2.97%",
     "investment": {
       "binanceChainId": "56",
       "defiProtocolId": "aave3",
@@ -342,9 +1369,9 @@
       "investType": "Earn",
       "apyType": "APY",
       "apy": null,
-      "tvl": "59585822",
-      "apyBps": 290,
-      "apyDisplay": "2.90%"
+      "tvl": "58696783.56",
+      "apyBps": 297,
+      "apyDisplay": "2.97%"
     },
     "verdict": "NO-GO",
     "reason": "unverified",
@@ -356,7 +1383,7 @@
         "id": "listing",
         "level": "PASS",
         "title": "Product accepts deposits",
-        "detail": "Aave V3 USDT — 2.90%, reported TVL $59,585,822",
+        "detail": "Aave V3 USDT — 2.97%, reported TVL $58,696,783.56",
         "evidence": {
           "binanceChainId": "56",
           "defiProtocolId": "aave3",
@@ -368,7 +1395,7 @@
           "investable": true,
           "apy": null,
           "apyType": "APY",
-          "tvl": "59585822",
+          "tvl": "58696783.56",
           "poolAddress": null,
           "feeRate": null,
           "assetTokenList": [
@@ -387,49 +1414,242 @@
           ],
           "lpTokenList": [],
           "borrowTokenList": [],
-          "apyBps": 290,
-          "apyDisplay": "2.90%"
-        }
+          "apyBps": 297,
+          "apyDisplay": "2.97%"
+        },
+        "consequence": null
       },
       {
         "id": "ratetype",
         "level": "PASS",
         "title": "Rate is a yield",
         "detail": "Reported as APY — a return, comparable with other APY figures.",
-        "evidence": null
+        "evidence": null,
+        "consequence": null
+      },
+      {
+        "id": "exitdelay",
+        "level": "PASS",
+        "title": "Withdrawal is immediate",
+        "detail": "Aave V3 credits redeemed funds as soon as the transaction confirms, with no waiting period.",
+        "evidence": {
+          "defiProtocolId": "aave3"
+        },
+        "consequence": null
       },
       {
         "id": "simulate",
         "level": "PASS",
         "title": "Simulated without broadcasting",
-        "detail": "Would interact with 0x6807dc923806fe8fd134338eabca509979a7e0cb — network fee ≈ $0.0298",
+        "detail": "Would interact with 0x6807dc923806fe8fd134338eabca509979a7e0cb — network fee ≈ $0.1561",
         "evidence": {
           "balanceChange": [
             {
               "tokenSymbol": "USDT",
               "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
-              "amount": "-1",
-              "valueUsd": "0.9997434342121628"
+              "amount": "-2",
+              "valueUsd": "1.9994222412484664"
             },
             {
               "tokenSymbol": "aBnbUSDT",
               "tokenAddress": "0xa9251ca9de909cb71783723713b21e4233fbf1b1",
-              "amount": "0.999999999999999999",
-              "valueUsd": "0.99975999999999999900024"
+              "amount": "1.999999999999999999",
+              "valueUsd": "1.99945999999999999900027"
             }
           ],
           "feeAndContract": {
             "estimatedNetworkFee": {
-              "amount": "0.00004003924419273",
+              "amount": "0.00020829952822062",
               "tokenSymbol": "BNB",
-              "valueUsd": "0.029771"
+              "valueUsd": "0.156121"
             },
             "interactWith": {
               "address": "0x6807dc923806fe8fd134338eabca509979a7e0cb"
             }
           },
           "warnings": []
-        }
+        },
+        "consequence": null
+      },
+      {
+        "id": "score",
+        "level": "PASS",
+        "title": "Binance scores this protocol 94.48",
+        "detail": "Aave is scored 94.48 by the venue listing it; its lowest dimension is market stability 92.",
+        "evidence": {
+          "defiProtocolId": "aave3",
+          "protocolName": "Aave",
+          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20241028/dcb5bfbf-cbe2-4ddd-a7b3-3a22c3e45a27.png",
+          "description": "Aave is a decentralized finance protocol for borrowing and lending, where users can participate as depositors or borrowers. Depositors provide liquidity to the market to earn a passive income, while borrowers are able to borrow in an overcollateralized (perpetually) or undercollateralized (one-block liquidity) fashion. AAVE is used as the center of gravity of Aave Protocol governance, allowing users to vote and decide on the outcome of Aave Improvement Proposals (AIPs). Additionally, AAVE can be staked within the protocol's Safety Module to provide security/insurance to the protocol and depositors. Stakers earn staking rewards and fees from the protocol.",
+          "websiteUrl": "https://aave.com/",
+          "investType": [
+            "Earn"
+          ],
+          "supportedChains": [
+            "56"
+          ],
+          "tvl": "17475941832",
+          "tags": [
+            "DeFi",
+            "Lending",
+            "Stablecoin Protocol"
+          ],
+          "founded": "2017",
+          "fdv": "2178560000.00000",
+          "totalFunding": "48700000",
+          "socialLinks": {
+            "x": "https://x.com/aave",
+            "discord": null,
+            "github": "https://github.com/aave",
+            "linkedin": "https://www.linkedin.com/company/aavelabs/",
+            "telegram": null,
+            "gitbook": "",
+            "website": "https://aave.com/"
+          },
+          "team": [
+            {
+              "name": "Stani Kulechov",
+              "role": "Founder & CEO",
+              "twitter": "https://x.com/StaniKulechov",
+              "linkedin": "https://www.linkedin.com/in/stani-kulechov-361284132",
+              "bio": "Stani Kulechov is the founder and CEO of Aave. He is an experienced entrepreneur with extensive knowledge in the crypto, blockchain, and fintech sectors. Stani is also a mentor to many founders and advisors of blockchain projects and has spoken at numerous FinTech, Blockchain, and cryptocurrency events."
+            },
+            {
+              "name": "Justin D'Errico",
+              "role": "Principal Backend Engineer",
+              "twitter": "https://x.com/justinoderrico",
+              "linkedin": "https://www.linkedin.com/in/justin-d-errico-33b76113a/",
+              "bio": "Justin D'Errico is currently the Principal Backend Engineer at Aave.Previously he worked at Zapper."
+            },
+            {
+              "name": "Luigi D'Onorio DeMeo",
+              "role": "Chief Strategy and Business Officer",
+              "twitter": "https://x.com/luigidemeo",
+              "linkedin": "https://www.linkedin.com/in/luigi-d-onorio-demeo-a1665223/",
+              "bio": "Luigi D'Onorio DeMeo is currently the Chief Strategy and Business Officer at Aave.Previously he worked at Avalanche."
+            },
+            {
+              "name": "Linda Jeng",
+              "role": "Chief Legal & Policy Officer",
+              "twitter": "https://x.com/Lindajeng1",
+              "linkedin": "https://www.linkedin.com/in/linda-jeng-4682b3/",
+              "bio": "Linda Jeng is the Chief Legal & Policy Officer at Aave Labs and previously worked at Mastercard. She also holds a J.D. from Columbia Law School."
+            },
+            {
+              "name": "Nicole Butler",
+              "role": "Chief Compliance Officer",
+              "twitter": null,
+              "linkedin": "https://www.linkedin.com/in/nicole-butler-592a51b0/",
+              "bio": "Nicole Butler is the Chief Compliance Officer at Aave. She previously served as the UK Compliance Lead and Deputy MLRO at Coinbase."
+            },
+            {
+              "name": "Peter Kerr",
+              "role": "Chief Financial Officer",
+              "twitter": null,
+              "linkedin": "https://www.linkedin.com/in/peter-kerr-970214b/",
+              "bio": "Peter Kerr is the Chief Financial Officer at Aave, with over 20 years of successful financial leadership experience."
+            },
+            {
+              "name": "Emilio Frangella",
+              "role": "VP of Engineering ",
+              "twitter": "https://x.com/The3D_",
+              "linkedin": "https://www.linkedin.com/in/emilio-frangella/",
+              "bio": "Emilio Frangella is Vice President of Engineering at Aave and a graduate of the University of Calabria."
+            },
+            {
+              "name": "Paris Rouzati",
+              "role": "SVP Marketing",
+              "twitter": "https://x.com/parisrouz",
+              "linkedin": "https://www.linkedin.com/in/parisrouzati/",
+              "bio": "Paris Rouzati is Senior Vice President of Marketing at Aave and previously worked at IDEO CoLab Ventures. She graduated from Georgia Tech."
+            },
+            {
+              "name": "Claudia Ceniceros",
+              "role": "Chief of Communications & PR",
+              "twitter": "https://x.com/thebusyspice",
+              "linkedin": "https://www.linkedin.com/in/claudiaceniceros/",
+              "bio": "Claudia Ceniceros is the Chief Communications and PR Officer at Aave, responsible for developing the company's messaging and media relations."
+            },
+            {
+              "name": "Maria Paula",
+              "role": "Brand partnerships",
+              "twitter": "https://x.com/MPtherealmvp",
+              "linkedin": null,
+              "bio": "María Paula Fernández (MP) works in brand partnerships at Aave, originally from Buenos Aires, Argentina, and has lived in Berlin, Germany since 2013. She has been working in the blockchain space since June 2017, in communications, strategy, operations and have consulted or worked for projects such as Polkadot, Gnosis, Melonport, Ethereum Community Fund, Golem, Akropolis, Concourse Open, Avalanche, and other grassroots and established projects on the Ethereum ecosystem. "
+            },
+            {
+              "name": "Kolten B.",
+              "role": "DeFi Marketing Director",
+              "twitter": null,
+              "linkedin": "https://www.linkedin.com/in/kolten",
+              "bio": "Kolten B. is currently the DeFi Marketing Director at Aave.Previously he worked at Liquity and Stellar Development Foundation."
+            },
+            {
+              "name": "George Bennett",
+              "role": "Data",
+              "twitter": "https://x.com/geeogi",
+              "linkedin": null,
+              "bio": "George Bennett works in data at Aave and is the creator of charting sites such as Aavescan, Qualil, Covid Live UK, How Is Everyone and more. He previously worked at Parsec Finance."
+            }
+          ],
+          "fundRaising": [
+            {
+              "round": "OTC",
+              "amount": "25000000",
+              "date": "2020-10-05",
+              "investors": [
+                "Blockchain Capital",
+                "Standard Crypto",
+                "Blockchain.com"
+              ]
+            },
+            {
+              "round": "OTC",
+              "amount": "3000000",
+              "date": "2020-07-15",
+              "investors": [
+                "Framework Ventures",
+                "Three Arrows Capital"
+              ]
+            },
+            {
+              "round": "OTC",
+              "amount": "4500000",
+              "date": "2020-07-09",
+              "investors": [
+                "ParaFi Capital"
+              ]
+            }
+          ],
+          "securityScore": "94.48",
+          "dimensionScores": {
+            "codeSecurity": "95.2300033569336",
+            "fundamentalHealth": "98",
+            "operationalResilience": "92.9000015258789",
+            "communityTrust": "92.87000274658203",
+            "governanceStrength": "95.80000305175781",
+            "marketStability": "92.25"
+          },
+          "highlights": [
+            "Project has security audits",
+            "Code repo health is in excellent condition"
+          ],
+          "faq": [
+            {
+              "titleKey": "What is Aave v3?",
+              "answerKey": "Aave v3 is the latest version of the Aave protocol, a decentralized finance platform that allows users to lend and borrow a variety of cryptocurrencies. It provides enhanced features such as cross-chain asset transfers, gas optimization, and improved risk management tools."
+            },
+            {
+              "titleKey": "How does stablecoin staking work on Aave v3?",
+              "answerKey": "Users can stake stablecoins like USDe,  DAI, and ETH on Aave v3. These coins are used as collateral to earn interest or to borrow other assets. Additionally when users staked stablecoins, the aTokens will be issued and represents the position in AAVE. aTokens can be moved and traded as any other cryptographic asset on Ethereum."
+            },
+            {
+              "titleKey": "Where are users' supplied funds stored?",
+              "answerKey": "The funds are allocated in a smart contract. The code of the smart contract is public, open source, formally verified and audited by third party auditors. Users can withdraw funds from the pool on-demand or export a tokenised (aTokens) version of your lender position. aTokens can be moved and traded as any other cryptographic asset on Ethereum."
+            }
+          ]
+        },
+        "consequence": null
       },
       {
         "id": "identity",
@@ -441,7 +1661,8 @@
           "isContract": true,
           "symbol": null,
           "name": null
-        }
+        },
+        "consequence": null
       },
       {
         "id": "mutability",
@@ -455,14 +1676,19 @@
           "beacon": null,
           "owner": null,
           "chain": null
+        },
+        "consequence": {
+          "brief": "One keyholder can swap the code holding your money, without warning.",
+          "full": "Whoever holds that key can swap the code holding your money, without asking and without warning, including for code that moves it somewhere else. Nothing here says they will. It says your deposit is protected by trust in that keyholder rather than by the code just verified, and that this is the mechanism behind several of the largest losses in DeFi."
         }
       },
       {
         "id": "value",
         "level": "PASS",
         "title": "Value is conserved",
-        "detail": "$1.00 in → $1.00 of position (+0.00% difference).",
-        "evidence": null
+        "detail": "$2.00 in → $2.00 of position (+0.00% difference).",
+        "evidence": null,
+        "consequence": null
       },
       {
         "id": "exit",
@@ -473,535 +1699,35 @@
           "code": 60003001,
           "name": "INVESTMENT_NO_POSITION",
           "message": "You don't have any position in this investment product."
-        }
+        },
+        "consequence": null
       },
       {
         "id": "history",
         "level": "PASS",
         "title": "Rate is normal for this pool",
-        "detail": "2.90% sits at the 50th percentile of 821 days of record (median 2.89%) since 2024-06-10.",
+        "detail": "2.97% sits at the 52nd percentile of 821 days of record (median 2.90%) since 2024-06-10.",
         "evidence": {
           "samples": 821,
           "from": "2024-06-10",
-          "median": 2.88798,
+          "median": 2.89777,
           "p90": 6.71442,
           "max": 16.70333,
-          "percentile": 0.5030450669914738,
-          "ratioToMedian": 1.0041620786847554,
+          "percentile": 0.5249695493300852,
+          "ratioToMedian": 1.0249260638352942,
           "project": "aave-v3",
           "poolId": "29be6a85-414f-4a66-b075-98863278912a",
-          "tvlUsd": 11117206
-        }
+          "tvlUsd": 10236106
+        },
+        "consequence": null
       },
       {
         "id": "capacity",
         "level": "PASS",
         "title": "Pool can absorb this deposit",
-        "detail": "$1.00 is 0.00% of a $11,117,206 pool.",
-        "evidence": null
-      }
-    ]
-  },
-  {
-    "label": "Venus USDT @ 2.82%",
-    "investment": {
-      "binanceChainId": "56",
-      "defiProtocolId": "venus",
-      "protocolName": "Venus",
-      "investmentId": "5b77bfd8d8f7c18e9ee0d8f331c4d78f56744eed8addbe2e9970c0ef37e763cb",
-      "investmentName": "USDT",
-      "investType": "Earn",
-      "apyType": "APY",
-      "apy": null,
-      "tvl": "195001955.71",
-      "apyBps": 282,
-      "apyDisplay": "2.82%"
-    },
-    "verdict": "GO",
-    "reason": "clear",
-    "blocked": 0,
-    "untested": 0,
-    "warned": 0,
-    "checks": [
-      {
-        "id": "listing",
-        "level": "PASS",
-        "title": "Product accepts deposits",
-        "detail": "Venus USDT — 2.82%, reported TVL $195,001,955.71",
-        "evidence": {
-          "binanceChainId": "56",
-          "defiProtocolId": "venus",
-          "protocolName": "Venus",
-          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20241028/0d696959-4857-4e0d-a2b5-3022264d34b5.jpg",
-          "investmentId": "5b77bfd8d8f7c18e9ee0d8f331c4d78f56744eed8addbe2e9970c0ef37e763cb",
-          "investmentName": "USDT",
-          "investType": "Earn",
-          "investable": true,
-          "apy": null,
-          "apyType": "APY",
-          "tvl": "195001955.71",
-          "poolAddress": null,
-          "feeRate": null,
-          "assetTokenList": [
-            {
-              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
-              "tokenName": "Tether USDT",
-              "tokenSymbol": "USDT"
-            }
-          ],
-          "rewardTokenList": [
-            {
-              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
-              "tokenName": "Tether USDT",
-              "tokenSymbol": "USDT"
-            }
-          ],
-          "lpTokenList": [],
-          "borrowTokenList": [],
-          "apyBps": 282,
-          "apyDisplay": "2.82%"
-        }
-      },
-      {
-        "id": "ratetype",
-        "level": "PASS",
-        "title": "Rate is a yield",
-        "detail": "Reported as APY — a return, comparable with other APY figures.",
-        "evidence": null
-      },
-      {
-        "id": "simulate",
-        "level": "PASS",
-        "title": "Simulated without broadcasting",
-        "detail": "Would interact with 0xfd5840cd36d94d7229439859c0112a4185bc0255 — network fee ≈ $0.0382",
-        "evidence": {
-          "balanceChange": [
-            {
-              "tokenSymbol": "USDT",
-              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
-              "amount": "-1",
-              "valueUsd": "0.9997488134990762"
-            },
-            {
-              "tokenSymbol": "vUSDT",
-              "tokenAddress": "0xfd5840cd36d94d7229439859c0112a4185bc0255",
-              "amount": "37.76465754",
-              "valueUsd": "0.99969471846765630426045764772175032"
-            }
-          ],
-          "feeAndContract": {
-            "estimatedNetworkFee": {
-              "amount": "0.000051250841358115",
-              "tokenSymbol": "BNB",
-              "valueUsd": "0.038181"
-            },
-            "interactWith": {
-              "address": "0xfd5840cd36d94d7229439859c0112a4185bc0255"
-            }
-          },
-          "warnings": []
-        }
-      },
-      {
-        "id": "identity",
-        "level": "PASS",
-        "title": "Contract confirmed on-chain",
-        "detail": "Chain reports \"Venus USDT\" (vUSDT) — consistent with Venus USDT.",
-        "evidence": {
-          "address": "0xfd5840cd36d94d7229439859c0112a4185bc0255",
-          "isContract": true,
-          "symbol": "vUSDT",
-          "name": "Venus USDT"
-        }
-      },
-      {
-        "id": "mutability",
-        "level": "PASS",
-        "title": "Code cannot be swapped",
-        "detail": "0xfd5840cd36d94d7229439859c0112a4185bc0255 holds its own logic. What was verified here is what runs, and nobody can replace it.",
-        "evidence": {
-          "isProxy": false,
-          "implementation": null,
-          "admin": null,
-          "beacon": null,
-          "owner": null
-        }
-      },
-      {
-        "id": "value",
-        "level": "PASS",
-        "title": "Value is conserved",
-        "detail": "$1.00 in → $1.00 of position (-0.01% difference).",
-        "evidence": null
-      },
-      {
-        "id": "exit",
-        "level": "PASS",
-        "title": "Exit path exists",
-        "detail": "Exit reached the position check (no position held yet), so the withdraw path is wired up.",
-        "evidence": {
-          "code": 60003001,
-          "name": "INVESTMENT_NO_POSITION",
-          "message": "You don't have any position in this investment product."
-        }
-      },
-      {
-        "id": "history",
-        "level": "PASS",
-        "title": "Rate is normal for this pool",
-        "detail": "2.82% sits at the 45th percentile of 1526 days of record (median 3.09%) since 2022-07-06.",
-        "evidence": {
-          "samples": 1526,
-          "from": "2022-07-06",
-          "median": 3.09214,
-          "p90": 8.90021,
-          "max": 27.67305,
-          "percentile": 0.44626474442988207,
-          "ratioToMedian": 0.9119897546682879,
-          "project": "venus-core-pool",
-          "poolId": "9f3a6015-5045-4471-ba65-ad3dc7c38269",
-          "tvlUsd": 60753781
-        }
-      },
-      {
-        "id": "capacity",
-        "level": "PASS",
-        "title": "Pool can absorb this deposit",
-        "detail": "$1.00 is 0.00% of a $60,753,781 pool.",
-        "evidence": null
-      }
-    ]
-  },
-  {
-    "label": "Venus Flux USDT @ 2.54%",
-    "investment": {
-      "binanceChainId": "56",
-      "defiProtocolId": "venusflux",
-      "protocolName": "Venus Flux",
-      "investmentId": "f7ebeb9f3d6345d641189881d3aa6120fba632a605ef58294062c06852f9ab29",
-      "investmentName": "USDT",
-      "investType": "Earn",
-      "apyType": "APY",
-      "apy": null,
-      "tvl": "2082702.04",
-      "apyBps": 254,
-      "apyDisplay": "2.54%"
-    },
-    "verdict": "GO",
-    "reason": "clear",
-    "blocked": 0,
-    "untested": 0,
-    "warned": 1,
-    "checks": [
-      {
-        "id": "listing",
-        "level": "PASS",
-        "title": "Product accepts deposits",
-        "detail": "Venus Flux USDT — 2.54%, reported TVL $2,082,702.04",
-        "evidence": {
-          "binanceChainId": "56",
-          "defiProtocolId": "venusflux",
-          "protocolName": "Venus Flux",
-          "protocolLogo": "https://bin.bnbstatic.com/images/web3-data/public/protocol/logos/92bb55c3792140b985942a513530b5dd.png",
-          "investmentId": "f7ebeb9f3d6345d641189881d3aa6120fba632a605ef58294062c06852f9ab29",
-          "investmentName": "USDT",
-          "investType": "Earn",
-          "investable": true,
-          "apy": null,
-          "apyType": "APY",
-          "tvl": "2082702.04",
-          "poolAddress": null,
-          "feeRate": null,
-          "assetTokenList": [
-            {
-              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
-              "tokenName": "Tether USDT",
-              "tokenSymbol": "USDT"
-            }
-          ],
-          "rewardTokenList": [
-            {
-              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
-              "tokenName": "Tether USDT",
-              "tokenSymbol": "USDT"
-            }
-          ],
-          "lpTokenList": [],
-          "borrowTokenList": [],
-          "apyBps": 254,
-          "apyDisplay": "2.54%"
-        }
-      },
-      {
-        "id": "ratetype",
-        "level": "PASS",
-        "title": "Rate is a yield",
-        "detail": "Reported as APY — a return, comparable with other APY figures.",
-        "evidence": null
-      },
-      {
-        "id": "simulate",
-        "level": "PASS",
-        "title": "Simulated without broadcasting",
-        "detail": "Would interact with 0xa5b8fca32e5252b0b58eabf1a8c79d958f8ee6a2 — network fee ≈ $0.0277",
-        "evidence": {
-          "balanceChange": [
-            {
-              "tokenSymbol": "USDT",
-              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
-              "amount": "-1",
-              "valueUsd": "0.9997791919794736"
-            },
-            {
-              "tokenSymbol": "fUSDT",
-              "tokenAddress": "0xa5b8fca32e5252b0b58eabf1a8c79d958f8ee6a2",
-              "amount": "0.974404379999412599",
-              "valueUsd": "0.999699047417771977757438648689296546062096916"
-            }
-          ],
-          "feeAndContract": {
-            "estimatedNetworkFee": {
-              "amount": "0.00003725840030478",
-              "tokenSymbol": "BNB",
-              "valueUsd": "0.027694"
-            },
-            "interactWith": {
-              "address": "0xa5b8fca32e5252b0b58eabf1a8c79d958f8ee6a2"
-            }
-          },
-          "warnings": []
-        }
-      },
-      {
-        "id": "identity",
-        "level": "WARN",
-        "title": "Run by someone other than the listed protocol",
-        "detail": "The listing says Venus Flux. The contract calls itself \"Fluid Tether USD\" (fUSDT). That is the pattern of a curated vault, where the listing names the lending protocol and the contract names the curator who actually sets the risk policy. Your money answers to the second one, and the listing never mentions them.",
-        "evidence": {
-          "address": "0xa5b8fca32e5252b0b58eabf1a8c79d958f8ee6a2",
-          "isContract": true,
-          "symbol": "fUSDT",
-          "name": "Fluid Tether USD"
-        }
-      },
-      {
-        "id": "mutability",
-        "level": "PASS",
-        "title": "Code cannot be swapped",
-        "detail": "0xa5b8fca32e5252b0b58eabf1a8c79d958f8ee6a2 holds its own logic. What was verified here is what runs, and nobody can replace it.",
-        "evidence": {
-          "isProxy": false,
-          "implementation": null,
-          "admin": null,
-          "beacon": null,
-          "owner": null
-        }
-      },
-      {
-        "id": "value",
-        "level": "PASS",
-        "title": "Value is conserved",
-        "detail": "$1.00 in → $1.00 of position (-0.01% difference).",
-        "evidence": null
-      },
-      {
-        "id": "exit",
-        "level": "PASS",
-        "title": "Exit path exists",
-        "detail": "Exit reached the position check (no position held yet), so the withdraw path is wired up.",
-        "evidence": {
-          "code": 60003001,
-          "name": "INVESTMENT_NO_POSITION",
-          "message": "You don't have any position in this investment product."
-        }
-      },
-      {
-        "id": "history",
-        "level": "PASS",
-        "title": "Rate is normal for this pool",
-        "detail": "2.54% sits at the 37th percentile of 187 days of record (median 2.97%) since 2026-03-06.",
-        "evidence": {
-          "samples": 187,
-          "from": "2026-03-06",
-          "median": 2.97,
-          "p90": 7.06,
-          "max": 52.55,
-          "percentile": 0.37433155080213903,
-          "ratioToMedian": 0.8552188552188552,
-          "project": "venus-flux",
-          "poolId": "f45554c1-21be-4d8d-a974-d23c3ad47624",
-          "tvlUsd": 2082882
-        }
-      },
-      {
-        "id": "capacity",
-        "level": "PASS",
-        "title": "Pool can absorb this deposit",
-        "detail": "$1.00 is 0.00% of a $2,082,882 pool.",
-        "evidence": null
-      }
-    ]
-  },
-  {
-    "label": "Lista USDT @ 2.38%",
-    "investment": {
-      "binanceChainId": "56",
-      "defiProtocolId": "helio",
-      "protocolName": "Lista",
-      "investmentId": "fd3134fdfe2ad1493fa09453890cddf67165d8a2ddff5c35515582f3be097b54",
-      "investmentName": "USDT",
-      "investType": "Earn",
-      "apyType": "APY",
-      "apy": null,
-      "tvl": "2660296.4",
-      "apyBps": 238,
-      "apyDisplay": "2.38%"
-    },
-    "verdict": "GO",
-    "reason": "clear",
-    "blocked": 0,
-    "untested": 0,
-    "warned": 4,
-    "checks": [
-      {
-        "id": "listing",
-        "level": "PASS",
-        "title": "Product accepts deposits",
-        "detail": "Lista USDT — 2.38%, reported TVL $2,660,296.4",
-        "evidence": {
-          "binanceChainId": "56",
-          "defiProtocolId": "helio",
-          "protocolName": "Lista",
-          "protocolLogo": "https://bin.bnbstatic.com/image/admin_mgs_image_upload/20240927/cee2f697-b4ea-4baf-955d-858d9eeac4f3.png",
-          "investmentId": "fd3134fdfe2ad1493fa09453890cddf67165d8a2ddff5c35515582f3be097b54",
-          "investmentName": "USDT",
-          "investType": "Earn",
-          "investable": true,
-          "apy": null,
-          "apyType": "APY",
-          "tvl": "2660296.4",
-          "poolAddress": null,
-          "feeRate": null,
-          "assetTokenList": [
-            {
-              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
-              "tokenName": "Tether USDT",
-              "tokenSymbol": "USDT"
-            }
-          ],
-          "rewardTokenList": [
-            {
-              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
-              "tokenName": "Tether USDT",
-              "tokenSymbol": "USDT"
-            }
-          ],
-          "lpTokenList": [],
-          "borrowTokenList": [],
-          "apyBps": 238,
-          "apyDisplay": "2.38%"
-        }
-      },
-      {
-        "id": "ratetype",
-        "level": "PASS",
-        "title": "Rate is a yield",
-        "detail": "Reported as APY — a return, comparable with other APY figures.",
-        "evidence": null
-      },
-      {
-        "id": "simulate",
-        "level": "PASS",
-        "title": "Simulated without broadcasting",
-        "detail": "Would interact with 0x6d6783c146f2b0b2774c1725297f1845dc502525 — network fee ≈ $0.1141",
-        "evidence": {
-          "balanceChange": [
-            {
-              "tokenSymbol": "ListaUSDT",
-              "tokenAddress": "0x6d6783c146f2b0b2774c1725297f1845dc502525",
-              "amount": "0.963445353197989232",
-              "valueUsd": "0.999699086057940957330973804148775101616690415726368"
-            },
-            {
-              "tokenSymbol": "USDT",
-              "tokenAddress": "0x55d398326f99059ff775485246999027b3197955",
-              "amount": "-1",
-              "valueUsd": "0.9997219528425608"
-            }
-          ],
-          "feeAndContract": {
-            "estimatedNetworkFee": {
-              "amount": "0.000153529431117992",
-              "tokenSymbol": "BNB",
-              "valueUsd": "0.114072"
-            },
-            "interactWith": {
-              "address": "0x6d6783c146f2b0b2774c1725297f1845dc502525"
-            }
-          },
-          "warnings": []
-        }
-      },
-      {
-        "id": "identity",
-        "level": "WARN",
-        "title": "Run by someone other than the listed protocol",
-        "detail": "The listing says Lista. The contract calls itself \"Gauntlet USDT Vault\" (vGauntletUSDT). That is the pattern of a curated vault, where the listing names the lending protocol and the contract names the curator who actually sets the risk policy. Your money answers to the second one, and the listing never mentions them.",
-        "evidence": {
-          "address": "0x6d6783c146f2b0b2774c1725297f1845dc502525",
-          "isContract": true,
-          "symbol": "vGauntletUSDT",
-          "name": "Gauntlet USDT Vault"
-        }
-      },
-      {
-        "id": "mutability",
-        "level": "WARN",
-        "title": "Code can be replaced",
-        "detail": "0x6d6783c146f2b0b2774c1725297f1845dc502525 forwards to 0x713a7e23cff5016a479b079e48b575818a3fcc95, and that target can be changed. What was confirmed above is what runs today, not necessarily what runs when the money comes back out.",
-        "evidence": {
-          "isProxy": true,
-          "implementation": "0x713a7e23cff5016a479b079e48b575818a3fcc95",
-          "admin": null,
-          "beacon": null,
-          "owner": null,
-          "chain": null
-        }
-      },
-      {
-        "id": "value",
-        "level": "PASS",
-        "title": "Value is conserved",
-        "detail": "$1.00 in → $1.00 of position (-0.00% difference).",
-        "evidence": null
-      },
-      {
-        "id": "exit",
-        "level": "PASS",
-        "title": "Exit path exists",
-        "detail": "Exit reached the position check (no position held yet), so the withdraw path is wired up.",
-        "evidence": {
-          "code": 60003001,
-          "name": "INVESTMENT_NO_POSITION",
-          "message": "You don't have any position in this investment product."
-        }
-      },
-      {
-        "id": "history",
-        "level": "WARN",
-        "title": "Cannot tell which pool this is",
-        "detail": "5 independent pools carry this protocol and asset, and none advertises a matching rate. The nearest is 2.21% against the listed 2.38% (0.17pp apart). Which pool a deposit would enter cannot be established, so its history cannot be read.",
-        "evidence": {
-          "recognised": true,
-          "candidates": 5
-        }
-      },
-      {
-        "id": "capacity",
-        "level": "WARN",
-        "title": "Pool size unknown",
-        "detail": "Could not establish independent pool size, so deposit impact is unknown.",
-        "evidence": null
+        "detail": "$2.00 is 0.00% of a $10,236,106 pool.",
+        "evidence": null,
+        "consequence": null
       }
     ]
   }

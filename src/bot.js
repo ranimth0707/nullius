@@ -182,7 +182,8 @@ const HELP =
   `back what it calls itself\\.\n\n` +
   `*3\\. I compare\\.* Listing says one thing, chain says another, I stop\\. Chain says nothing ` +
   `at all, I also stop\\.\n\n` +
-  `Ten checks run in total: delisted products, contracts whose code one key can replace, hidden ` +
+  `Eleven checks run in total: delisted products, contracts whose code one key can replace, ` +
+  `hidden ` +
   `second assets, fee rates dressed up as yields, missing exits, and pools too small to take ` +
   `your money without moving the rate\\.\n\n` +
   `*Three answers, not two\\.* Pass, fail, or no evidence either way\\. The third one still ` +
@@ -709,6 +710,13 @@ async function confirmStage(chat, nonce, userId) {
     return send(chat, "That confirmation has expired\\. Run the check again\\.", HOME_KEYS);
   }
   const isRedeem = i.action === "redeem";
+  // The nonce behind a product button is staged with a placeholder amount and
+  // resized before it can be confirmed. Confirming one that never got resized
+  // would send a deposit of nothing, which is not dangerous but is not a state
+  // worth having.
+  if (!isRedeem && !(Number(i.amount) > 0)) {
+    return send(chat, "No amount was chosen for that one\\. Pick a size first\\.", HOME_KEYS);
+  }
   const what = isRedeem
     ? `Withdrawing *${i.ratio === 1 ? "all" : `${Math.round(i.ratio * 100)}%`}* of your position ` +
       `in *${esc(i.label)}*\\.`

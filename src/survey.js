@@ -54,22 +54,38 @@ async function surveyType(type, cap) {
         pool, via,
       };
       if (pool) {
-        const m = await mutability(pool);
-        row.isProxy = m.isProxy;
-        row.implementation = m.implementation;
-        const who = m.admin ?? m.beacon ?? m.owner;
-        if (m.isProxy && who) {
-          const c = await controlChain(who);
-          row.controlEndsAt = c.endsAt?.address ?? null;
-          row.controlKind = c.endsAt?.kind ?? null;
-          row.controlHops = c.hops.length;
-        } else if (m.isProxy) {
-          row.controlKind = "unknown";
+        // Chain reads throw rather than returning a default, on purpose: a read
+        // that failed is not an observation. But it must not take the listing
+        // data down with it. Nine pools were recorded as publishing no address
+        // when they publish one, because a transport error here discarded the
+        // whole row and the summary then counted it as an absence.
+        try {
+          const m = await mutability(pool);
+          row.isProxy = m.isProxy;
+          row.implementation = m.implementation;
+          const who = m.admin ?? m.beacon ?? m.owner;
+          if (m.isProxy && who) {
+            const c = await controlChain(who);
+            row.controlEndsAt = c.endsAt?.address ?? null;
+            row.controlKind = c.endsAt?.kind ?? null;
+            row.controlHops = c.hops.length;
+          } else if (m.isProxy) {
+            row.controlKind = "unknown";
+          }
+        } catch (err) {
+          row.chainError = err.message;
         }
       }
       rows.push(row);
     } catch (err) {
-      rows.push({ type, protocol: inv.protocolName, asset: inv.investmentName, error: err.message });
+      // Keep what the listing already gave us. A row that could not be
+      // completed is marked, so the summary can exclude it instead of
+      // counting it as a negative finding.
+      rows.push({
+        type, protocol: inv.protocolName, asset: inv.investmentName,
+        rate: Number(inv.apyBps) / 100, tvl: Number(inv.tvl),
+        pool: null, via: null, error: err.message,
+      });
     }
     await sleep(60);
   }
@@ -90,7 +106,8 @@ writeFileSync(new URL("survey-latest.json", OUT),
 
 // ---------------------------------------------------------------- summary
 
-const withPool = rows.filter((r) => r.pool);
+const complete = rows.filter((r) => !r.error);
+const withPool = complete.filter((r) => r.pool);
 const proxies = withPool.filter((r) => r.isProxy);
 const byKind = (k) => proxies.filter((r) => r.controlKind === k);
 
@@ -102,8 +119,16 @@ const byVia = (v) => withPool.filter((r) => r.via === v);
 const lending = rows.filter((r) => r.type === "Earn");
 const pools = rows.filter((r) => r.type === "LiquidityPool");
 
+const failed = rows.length - complete.length;
+const chainless = complete.filter((r) => r.chainError).length;
+
 console.log(`\nSurveyed ${rows.length} products on chain ${CHAIN} at ${stamp}`);
-console.log(`  ${lending.length} lending, ${pools.length} liquidity pools\n`);
+console.log(`  ${lending.length} lending, ${pools.length} liquidity pools`);
+// Stated rather than absorbed. A row that could not be read is not a row that
+// read as no, and the difference has to survive into the summary.
+if (failed) console.log(`  ${failed} could not be read at all and are excluded below`);
+if (chainless) console.log(`  ${chainless} resolved an address but the chain read failed`);
+console.log("");
 
 console.log(`  contract address reachable   ${withPool.length}`);
 console.log(`    from the listing           ${byVia("listing").length}  (all liquidity pools)`);

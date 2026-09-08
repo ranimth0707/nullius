@@ -28,21 +28,30 @@ Five seconds, no wallet, no funds, no API key. It replays a run recorded against
 and writes an HTML report into `reports/`.
 
 ```text
-Venus BNB @ 0.13%
+Lista USDT @ 5.40%
   ✓ Product accepts deposits
+  ✓ Rate is a yield
+  ! Withdrawal might be queued
+    Binance names Lista among the protocols that can hold a redemption before the
+    funds are claimable. Whether this product does is not published anywhere.
   ✓ Simulated without broadcasting
-    Would interact with 0xa07c5b74c9b40447a954e1466938b865b6bbea36
-  ✓ Contract confirmed on-chain
-    Chain reports "Venus BNB" (vBNB), consistent with Venus BNB.
+    Would interact with 0xb5a30e1fa2cf3c8dea882124b3ab5a47a27c5dd2
+  ✓ Binance scores this protocol 92.85
+    Lowest dimension is governance strength 81.
+  ! Run by someone other than the listed protocol
+    The listing says Lista. The contract calls itself "RockawayX PT Yield"
+    (roxptUSDT), the curator who actually sets the risk policy.
+  ! Code can be replaced
+    Forwards to 0x713a7e23cff5016a479b079e48b575818a3fcc95, and that can change.
   ✓ Value is conserved
   ✓ Exit path exists
   ✓ Rate is normal for this pool
-    0.13% sits at the 14th percentile of 1524 days of record since 2022-07-06.
+    5.40% sits at the 21st percentile of 142 days of record (median 7.02%).
   ✓ Pool can absorb this deposit
 
-  GO  all clear
+  GO  3 warnings
 
-1 of 5 cleared preflight.
+1 of 6 cleared preflight.
 ```
 
 Three ways to use it, all running the same engine:
@@ -69,18 +78,28 @@ any of that quietly is forbidden.
 There is no such file for deposits. An agent gets a protocol name and a percentage from
 `investment-list`, and that is the whole basis on which it moves money.
 
-Look at what the listing actually gives you. Chain 56 carries 590 products: 61 lending products
-that report APY, and 529 liquidity pools that report APR. Both land in the same sortable list. The
-lending side has a median of 0.72%. The pools have a median of 196% and a top entry at 16,121%.
+Look at what the listing actually gives you. Chain 56 carries 595 products: 60 lending products
+that report APY, and 535 liquidity pools that report APR. Both land in the same sortable list.
+
+The lending side has a median of 0.69% and tops out at 6.49%. The pools are a different animal
+entirely. Their median is 4.78%, but the distribution has a tail: the 90th percentile is 219%, the
+99th is 6,610%, and the top entry is 17,880%. Seventy-six pools advertise more than 100% and twenty
+advertise more than 1,000%.
+
 An APR on a concentrated-liquidity position is an annualised fee rate. It is not money anyone
-receives and it knows nothing about impermanent loss. Sort that combined list by rate and the
-first thing you touch is a memecoin pool.
+receives and it knows nothing about impermanent loss. So sorting that combined list by rate does
+not surface the best product. It surfaces the tail, every time, and the tail is memecoin pools.
 
 The listing also leaves things out. It never carries `investable`, so a delisted product stays
-visible with its rate intact. The highest-paying lending product on the whole chain, Aave V3 FDUSD
-at 12.44%, is delisted. You find out when the deposit fails. And on all 61 lending products
-`poolAddress` comes back `null`, so nothing in the listing tells you which contract you are about
-to enter. Lista alone runs six USDT pools ranging from 1.81% to 34.69%.
+visible with its rate intact and an agent sorting by rate picks it first. On one earlier run the
+highest-paying lending product on the whole chain, Aave V3 FDUSD at 12.44%, was delisted; today
+nothing on the surface is. Which is the point of checking rather than assuming: the field is not in
+the listing either way, so the only way to know which of those two days you are having is to ask.
+
+The bigger omission is permanent. On all 60 lending products `poolAddress` comes back `null`, so
+nothing in the listing tells you which contract you are about to enter. Lista alone runs four USDT
+products at 5.40%, 5.09%, 2.20% and 1.34%, and the listing gives you no way to tell them apart
+beyond the number.
 
 ## How it works
 
@@ -89,7 +108,7 @@ to enter. Lista alone runs six USDT pools ranging from 1.81% to 34.69%.
 nowhere in the listing.
 
 From there Nullius stops asking Binance anything. It calls `name()` and `symbol()` on that address
-through public BSC nodes and compares what comes back against what was advertised. Ten checks run
+through public BSC nodes and compares what comes back against what was advertised. Eleven checks run
 before anything is signed.
 
 | Check | Refuses when |
@@ -104,10 +123,12 @@ before anything is signed.
 | Exit | no withdrawal path can be confirmed |
 | History | the rate sits far outside the pool's own multi-year record |
 | Capacity | the deposit would own more than 5% of the pool |
+| Exit delay | the protocol can queue a redemption, so the money may not come back on demand |
+| Protocol score | Binance's own security score is low, or it never published one |
 
 The listing check is not original. `defi.md` already says an agent must refuse a product with
 `investable: false`. The rule is written down, nothing enforces it, and the field is missing from
-the listing an agent reads. The other nine checks have no counterpart anywhere in the docs.
+the listing an agent reads. The exit-delay check comes from a line in the DeFi API limitations, and the protocol score is a Binance field that simply never appears near a rate. The rest have no counterpart anywhere in the docs.
 
 Mutability is the one that matters most, and it came last. Confirming a contract calls itself
 Venus BNB is worth little if the code behind that name can be swapped tomorrow. The check reads the
@@ -150,19 +171,34 @@ is the reason two live protocols are not accused of anything in the output below
 
 ## What a live run found
 
-Screening the BNB-denominated lending products at a $3.81 test deposit, one of five cleared.
+Screening all five BNB-denominated lending products at a 0.003 BNB test deposit, three cleared.
 
-Venus BNB passed everything. The chain confirmed the contract as `Venus BNB` / `vBNB`, and its
-0.13% sits at the 14th percentile of 1,524 days of record going back to July 2022.
+Venus BNB passed all eleven checks with nothing to report. The chain confirms the contract as
+`Venus BNB` / `vBNB`, it cannot be upgraded, and its rate sits inside its own multi-year record.
 
-Venus Flux BNB failed. The listing calls it Venus Flux. The contract calls itself
-`Fluid Wrapped BNB` (`fWBNB`). Two protocol names, one deposit.
+Venus Flux BNB cleared with one warning, and the warning is the interesting part. The listing calls
+it Venus Flux. The contract calls itself `Fluid Wrapped BNB` (`fWBNB`). This used to be recorded as
+a failure, which was too strong: it is the curated-vault pattern, where the listing names the
+lending protocol and the contract names whoever actually sets the risk policy. That is worth being
+told. It is not grounds for refusing.
 
-Lista BNB, Aster BNB and Lista's second BNB product were refused without any accusation. Their
-contracts hold code but expose no `name()` or `symbol()`, so nothing could be established.
+The same pattern runs through the USDT side, where four products listed under one protocol resolve
+to four different entities: `RockawayX PT Yield`, `Gauntlet USDT Vault`, `Pangolins USDT Vault`,
+and `Fluid Tether USD`. The curator's name never appears in the listing.
 
-On the pool side, `--type LiquidityPool` screens the other 529. The highest-rate product on the
-whole surface, PancakeSwap V3 `BNB-BREW` at 14,651% APR, fails twice over:
+Lista BNB at 1.50% clears without its contract ever saying what it is. It exposes no `name()`,
+which is permitted, so identity is corroborated instead: the chain shows its code can only be
+changed through a timelock, and an independent source recognises the protocol and asset. Recorded
+as corroborated rather than read.
+
+Aster BNB and Lista's other BNB product are still refused, and not accused of anything. Aster
+carries no security score from Binance at all while every other protocol in the same list does,
+and no independent record of its pool exists. Lista's second product cannot be identified and its
+code can be replaced without a timelock in the way.
+
+On the pool side, `--type LiquidityPool` screens the pools instead. On the run recorded below the
+highest-rate product on the whole surface was PancakeSwap V3 `BNB-BREW` at 14,651% APR, and it
+failed twice over:
 
 ```text
 ! Rate is a fee rate, not a yield
@@ -211,17 +247,24 @@ else, then the same product put through the checks.
 `npm run survey` runs the checks across every product rather than one at a time,
 which turns a check into a measurement.
 
-Across 122 products on chain 56, all 61 liquidity pools publish a contract
-address and none of them is upgradeable, because an AMM pool is immutable by
-construction. No lending product publishes an address at all, and of the five
-this wallet could reach by simulation, three sit behind proxies holding roughly
-$1.2bn between them. One of those ends at a timelock, which is a materially
-better answer than a bare key and is graded as such.
+Across 160 products on chain 56, all 100 liquidity pools publish their contract address in the
+listing, and none of them can be upgraded, because an AMM pool is immutable by construction. No
+lending product publishes an address at all. Eleven of the sixty could be reached by simulating a
+deposit, which is only possible for assets the wallet already holds, and seven of those eleven sit
+behind a proxy whose code can be replaced.
 
-So the surface publishes an address for every product whose code cannot change,
-and for none of the products whose code can. The ones worth verifying are the
-ones you cannot verify until you already hold the asset. The sample of five
-lending products is small and the direction is structural rather than incidental.
+So the surface publishes an address for every product whose code cannot change, and for none of the
+products whose code can. The ones worth verifying are exactly the ones you cannot verify until you
+already hold the asset.
+
+Of the seven upgradeable ones, upgrade authority ends at a timelock for a single product holding
+$738m. For the other six, holding $516m between them, it ends somewhere this tool could not
+resolve, and an unresolved admin is graded as unknown rather than as fine.
+
+Nine pools resolved an address but their chain read failed, and the survey now says so on its own
+summary line. It used to discard those rows entirely, which made them count as pools that publish
+no address. That is nine products reported as worse than they are, from a transport error, and it
+is the same mistake the watchtower made in the other direction.
 
 ## The watchtower
 
@@ -257,13 +300,14 @@ Most of this tool was built by watching what the wallet CLI did and inferring ru
 is how you end up with rules that are almost right. Going back through the published DeFi API
 reference and then measuring the CLI against it found four things the inferred version had wrong.
 
-**Refusals were being blamed on the product.** A deposit preview was run against all 144 Earn and
-LiquidityPool products on BSC. 101 of the refusals were the wallet not holding the token. One was a
-minimum deposit of 1 USDT on a Lista product, which the listing never mentions. 43 were a parameter
-this program had failed to supply. None was the product rejecting a deposit. Every one of them had
-been reported the same way, as `Simulation refused`, which reads as a finding and almost never was
-one. `src/refusal.js` now separates a refusal about the wallet from a refusal about the product,
-and only the second counts as evidence.
+**Refusals were being blamed on the product.** A deposit preview was run against 160 products: all
+60 Earn products on BSC and the first 100 liquidity pools. Six succeeded. Of the 154 refusals, 108
+were the wallet not holding the token, one was a minimum deposit of 1 USDT on a Lista product that
+the listing never mentions, and 45 were a parameter this program had failed to supply. None was the
+product rejecting a deposit. Every one of them had been reported the same way, as
+`Simulation refused`, which reads as a finding and almost never was one. `src/refusal.js` now
+separates a refusal about the wallet from a refusal about the product, and only the second counts
+as evidence.
 
 The error name alone is not enough to do that, because `SERVICE_ERROR` is not a service error. It
 is where the CLI puts ordinary business rejections, so a minimum deposit and a missing tick range
@@ -287,10 +331,10 @@ near the rate. Aave scores 94.48, Lista 92.83, Venus 92.21, Solv 88.75, and Aste
 while sitting in the same list looking identical. That is now a check.
 
 Two smaller things came out of the same pass and are worth recording. Rate types are perfectly
-clean across the surface: all 60 Earn products report APY, all 84 pools report APR, with no
-exceptions, so the annual figures are compounded on one side and simple on the other. And
-`poolAddress` is present on 84 of 84 pools and 0 of 60 Earn products, which confirms on the full
-surface a claim this project previously got wrong and had to correct in public.
+clean: all 60 Earn products report APY and all 100 pools sampled report APR, with no exceptions, so
+the annual figures are compounded on one side and simple on the other. And `poolAddress` is present
+on 100 of 100 pools and 0 of 60 Earn products, which confirms across the whole lending surface a
+claim this project previously got wrong and had to correct in public.
 
 One discrepancy is worth reporting upstream. The documented behaviour of `preview --action LP-ADD`
 against an `Earn` investment is error `40453`. Run against a Lista USDT product with
