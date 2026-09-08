@@ -6,8 +6,8 @@
 
 <p align="center">
 <img src="https://img.shields.io/badge/network-BNB%20Smart%20Chain-F0B90B" alt="BNB Smart Chain">
-<img src="https://img.shields.io/badge/tests-25%20passing-3fb950" alt="25 tests passing">
-<img src="https://img.shields.io/badge/broadcasts-never-8b93a7" alt="never broadcasts">
+<img src="https://github.com/ranimth0707/nullius/actions/workflows/test.yml/badge.svg" alt="tests">
+<img src="https://github.com/ranimth0707/nullius/actions/workflows/watch.yml/badge.svg" alt="watchtower">
 <img src="https://img.shields.io/badge/license-MIT-45616D" alt="MIT license">
 </p>
 
@@ -89,7 +89,7 @@ to enter. Lista alone runs six USDT pools ranging from 1.81% to 34.69%.
 nowhere in the listing.
 
 From there Nullius stops asking Binance anything. It calls `name()` and `symbol()` on that address
-through public BSC nodes and compares what comes back against what was advertised. Nine checks run
+through public BSC nodes and compares what comes back against what was advertised. Ten checks run
 before anything is signed.
 
 | Check | Refuses when |
@@ -99,6 +99,7 @@ before anything is signed.
 | Pairing | a liquidity add would draw on an asset the command never named |
 | Simulation | the deposit cannot be simulated, or names no contract |
 | Identity | the chain says that contract belongs to a different protocol |
+| Mutability | one key can replace the code behind the address |
 | Value | the simulated deposit loses value before fees |
 | Exit | no withdrawal path can be confirmed |
 | History | the rate sits far outside the pool's own multi-year record |
@@ -106,7 +107,14 @@ before anything is signed.
 
 The listing check is not original. `defi.md` already says an agent must refuse a product with
 `investable: false`. The rule is written down, nothing enforces it, and the field is missing from
-the listing an agent reads. The other eight checks have no counterpart anywhere in the docs.
+the listing an agent reads. The other nine checks have no counterpart anywhere in the docs.
+
+Mutability is the one that matters most, and it came last. Confirming a contract calls itself
+Venus BNB is worth little if the code behind that name can be swapped tomorrow. The check reads the
+EIP-1967 slots and follows upgrade authority to whoever actually holds it, because an admin that is
+a timelock is a different proposition from an admin that is one private key. Venus vBNB holds its
+own logic and cannot be changed. Lista BNB forwards elsewhere and that target can be moved, though
+its authority ends at a timelock.
 
 The pairing check exists because of one line in `defi.md`: *"You name one token; the wallet debits
 BOTH."* `lp-add` takes a single token and a single amount, but a pool position needs both sides and
@@ -163,15 +171,85 @@ That destination is the address the preflight named and verified before anything
 
 ## The model has no hands
 
-The Telegram bot runs a model so it can read plain English. The model picks which product to look
-at. It has no say in whether anything proceeds.
+The Telegram bot runs a model so it can read plain English, and it does deposit. Those two facts
+have to sit together carefully.
 
-That is not a rule it was asked to follow. `src/baw.js` enforces a read-only allowlist at the
-wrapper level, and `defi deposit` is not on it. The model can decide whatever it likes. The call to
-move money does not exist in anything it can reach.
+`src/baw.js` refuses anything outside a read-only allowlist, and everything the model can reach
+goes through it. Depositing lives in `src/execute.js`, which is not reachable that way. It requires
+a nonce minted server-side after a preflight came back clear, bound to the person who staged it,
+expiring in five minutes and burned before the call goes out. The model never sees a nonce and
+cannot produce one.
+
+So the guarantee is not that the model has been told not to spend money. It is that "the model
+decided to deposit" is not a state this program has. Seven tests cover exactly that: an unstaged
+nonce, a nonce presented by the wrong person, a rejected attempt leaving the intent intact, and the
+same nonce refusing to spend twice.
 
 Tap **Show me the trap** in the bot and it plays both sides: a model handed the listing and nothing
 else, then the same product put through the checks.
+
+## What the whole surface looks like
+
+`npm run survey` runs the checks across every product rather than one at a time,
+which turns a check into a measurement.
+
+Across 122 products on chain 56, all 61 liquidity pools publish a contract
+address and none of them is upgradeable, because an AMM pool is immutable by
+construction. No lending product publishes an address at all, and of the five
+this wallet could reach by simulation, three sit behind proxies holding roughly
+$1.2bn between them. One of those ends at a timelock, which is a materially
+better answer than a bare key and is graded as such.
+
+So the surface publishes an address for every product whose code cannot change,
+and for none of the products whose code can. The ones worth verifying are the
+ones you cannot verify until you already hold the asset. The sample of five
+lending products is small and the direction is structural rather than incidental.
+
+## The watchtower
+
+Knowing a contract is upgradeable says a deposit could go wrong. It does not say
+anything did.
+
+Wasabi Protocol lost $5m on 30 April 2026 not because its vaults sat behind
+proxies, which hundreds of protocols do safely, but because the implementation
+behind those proxies was replaced at one particular moment. Drift lost $285m the
+same way. In both cases the proxy address never changed, so everything checking
+by address, including the identity check in this repo, kept reporting that all
+was well.
+
+```bash
+npm run watch
+```
+
+This records what each of the 66 reachable addresses currently forwards to and
+says so when that moves. Building the watchlist needs `baw` and is done once;
+after that the check is a public RPC read, so it runs in CI on a schedule with no
+wallet, no Binance account and no secrets. Each run commits what it saw, which
+makes the git history the record: an implementation that changes cannot be
+quietly changed back.
+
+There is no timestamp in the committed file, deliberately. With one it would
+differ on every pass and the job would commit a new time every four hours whether
+or not anything happened, leaving a real change as one commit among hundreds of
+empty ones.
+
+## Attacking it on purpose
+
+`npm run redteam` hands a model every check in full, the live product list, and
+one instruction: get past them. Each answer names a product and a mechanism, and
+each is then run through the real checks rather than believed.
+
+The first run produced nothing that passed every check, and three claims that
+landed on products the tool cannot evaluate at all. That distinction is kept
+separate on purpose. A check that fires is a catch. A product that cannot be
+assessed is an admission, and counting it as a win would turn every lending
+product into a false victory, since none of them publish a contract.
+
+Which is the actual finding, and it agrees with the survey from the other
+direction: coverage here is inverted against the risk. Sixty-one immutable pools
+can be checked in full. Sixty-one lending products, the ones where upgradeable
+proxies live, cannot be checked at all without first holding the asset being
+checked.
 
 ## What this does not do
 
@@ -222,12 +300,15 @@ src/llama.js    DefiLlama pool matching and per-pool rate history
 src/checks.js   the nine checks and the fail-closed verdict
 src/report.js   self-contained offline HTML
 src/cli.js      scan and check
+src/survey.js   sweep the whole surface
+src/watch.js    the watchtower
+src/redteam.js  point a model at the checks
 src/serve.js    local dashboard
 src/ui.js       dashboard page
 src/bot.js      Telegram
-test/           25 tests, two of them pinning defects listed above
+test/           32 tests, including the execution guards and two pinned defects
 ```
 
-Nothing here signs or broadcasts. The deposit above was run by hand from a separate terminal.
+Only `execute.js` broadcasts, and only behind a nonce. Everything else reads or simulates.from a separate terminal.
 
 MIT.

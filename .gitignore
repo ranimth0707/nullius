@@ -1,6 +1,7 @@
 .DS_Store
 .env
 .env.*
+data/redteam-latest.json
 data/survey-latest.json
 node_modules/
 reports/

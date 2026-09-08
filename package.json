@@ -14,7 +14,8 @@
     "ui": "node src/serve.js",
     "bot": "node src/bot.js",
     "survey": "node src/survey.js",
-    "watch": "node src/watch.js"
+    "watch": "node src/watch.js",
+    "redteam": "node src/redteam.js"
   },
   "keywords": [
     "binance",
