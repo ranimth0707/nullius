@@ -8,7 +8,7 @@
 
 import { readFileSync, existsSync } from "node:fs";
 import { listInvestments, walletStatus, baw } from "./baw.js";
-import { preflight, screen, PASS, WARN, BLOCK, UNTESTED } from "./checks.js";
+import { preflight, PASS, WARN, BLOCK, UNTESTED } from "./checks.js";
 import { stage, peek, commit } from "./execute.js";
 import { positions, formatEarned } from "./positions.js";
 import { classify } from "./refusal.js";
@@ -219,51 +219,6 @@ async function products(type) {
   return cache[type];
 }
 
-/**
- * Screening results, built in the background so a tap returns instantly.
- *
- * Screening needs no balance, so it can cover the whole listing rather than the
- * handful of products the wallet happens to hold.
- */
-const screened = { LiquidityPool: new Map(), Earn: new Map() };
-let screening = false;
-
-async function screenAll(type, limit = 24) {
-  const items = await products(type);
-  if (!items) return;
-  for (const inv of items.slice(0, limit)) {
-    if (screened[type].has(inv.investmentId)) continue;
-    try {
-      screened[type].set(inv.investmentId, await screen({ investment: inv, chainId: "56" }));
-    } catch { /* leave it out rather than record a guess */ }
-    // Screening the whole listing takes about a minute and a half of back-to-back
-    // subprocess calls. Whoever is tapping buttons right now should not be queued
-    // behind work they did not ask for.
-    await new Promise((r) => setTimeout(r, 40));
-  }
-}
-
-async function backgroundScreen() {
-  if (screening) return;
-  screening = true;
-  try {
-    await screenAll("LiquidityPool");
-    await screenAll("Earn");
-    const v = [...screened.LiquidityPool.values(), ...screened.Earn.values()]
-      .filter((s) => s.verdict === "VERIFIED").length;
-    console.log(`  screened ${screened.LiquidityPool.size + screened.Earn.size} products, ` +
-                `${v} verified`);
-  } finally {
-    screening = false;
-  }
-}
-
-/** Products whose identity the chain confirms, best rate first. */
-function verified(type) {
-  const items = cache[type] ?? [];
-  return items.filter((i) => screened[type].get(i.investmentId)?.verdict === "VERIFIED");
-}
-
 function bestMatch(items, query) {
   const q = query.toLowerCase().replace(/[^a-z0-9 ]/g, " ").split(/\s+/).filter(Boolean);
   if (!q.length) return null;
@@ -288,36 +243,6 @@ async function showList(chat, type) {
   const items = await products(type);
   if (!items) return send(chat, "Could not reach the Binance listing right now\\.", HOME_KEYS);
   return send(chat, listIntro(type), productKeys(items, type));
-}
-
-/** The useful half: what survived screening. */
-async function showVerified(chat, type) {
-  await typing(chat);
-  await products(type);
-  if (!screened[type].size) {
-    backgroundScreen();
-    return send(chat,
-      `I am still working through the listing\\. Give me a minute and try again\\.`, HOME_KEYS);
-  }
-  const ok = verified(type);
-  const total = screened[type].size;
-  const noun = type === "LiquidityPool" ? "pools" : "lending products";
-
-  if (!ok.length) {
-    return send(chat,
-      `I checked ${total} ${noun} against the chain and *none of them came back clean*\\.\n\n` +
-      `That is the finding, not a failure to produce a list\\.`, HOME_KEYS);
-  }
-  const head =
-    `*${ok.length} of ${total} ${noun} check out*\n\n` +
-    `For each of these the chain confirms the contract really holds what the listing says, the ` +
-    `product still accepts deposits, and the rate is in line with its own history\\.\n\n` +
-    (type === "LiquidityPool"
-      ? `Still an APR, so still a fee rate rather than a yield, and impermanent loss is your ` +
-        `problem\\.\n\n`
-      : ``) +
-    `Tap one for the full check before you actually put money in\\.`;
-  return send(chat, head, productKeys(ok, type));
 }
 
 /** One product, with progress so the wait is legible. */
@@ -589,7 +514,6 @@ async function onCallback(q) {
   if (d.startsWith("stage:")) return confirmStage(chat, d.slice(6), userId);
   if (d.startsWith("go:")) return doDeposit(chat, d.slice(3), userId);
   if (d.startsWith("list:")) return showList(chat, d.slice(5));
-  if (d.startsWith("ok:")) return showVerified(chat, d.slice(3));
   if (d.startsWith("chk:")) {
     const [, tag, idPrefix] = d.split(":");
     const type = tag === "L" ? "LiquidityPool" : "Earn";
@@ -619,12 +543,22 @@ async function handle(msg) {
   if (/^\/work\b/.test(text) || /\b(deposit|invest|put .*(money|bnb).*work)\b/i.test(text))
     return putToWork(chat, msg.from?.id);
   if (/^\/earn\b/.test(text)) return showList(chat, "Earn");
-  if (/^\/pools\b/.test(text)) return showList(chat, "LiquidityPool");
 
   // Plain language. The model picks what to look at; it decides nothing else.
   await typing(chat);
-  const looksLikePool = /\b(pool|lp|liquidity)\b/i.test(text);
-  const type = looksLikePool ? "LiquidityPool" : "Earn";
+  // Asking about pools used to switch the whole session onto a listing this bot
+  // cannot deposit into. Answering the question honestly is better than routing
+  // someone into a dead end.
+  if (/\b(pool|lp|liquidity)\b/i.test(text)) {
+    return send(chat,
+      `I do not enter liquidity pools\\.\n\n` +
+      `Depositing into one means supplying two assets at once, inside a price range, and the ` +
+      `advertised APR is a trading fee rate rather than a yield\\. That is a different product ` +
+      `with different ways to lose money, and I am not going to half\\-build it\\.\n\n` +
+      `What I do is lending: one asset in, one asset out, checked against the chain first\\.`,
+      HOME_KEYS);
+  }
+  const type = "Earn";
   const items = await products(type);
   if (!items) return send(chat, "Could not reach the Binance listing right now\\.", HOME_KEYS);
 
@@ -668,8 +602,3 @@ console.log(`  wallet: ${w.ok ? w.data.status : "unreachable"}`);
 console.log(`  model: ${LLM.key ? LLM.model : "none (matching only)"}`);
 console.log(`  allowed: ${ALLOWED.join(", ") || "nobody yet"}\n`);
 poll();
-// Not immediately. A restart is exactly when someone is most likely to be
-// tapping, and the first thing they would hit is a minute and a half of
-// screening they cannot see.
-setTimeout(backgroundScreen, 5_000);
-setInterval(backgroundScreen, 10 * 60_000);
